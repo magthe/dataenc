@@ -18,12 +18,13 @@
 
 -- | Data encoding module.
 --
---   It exposes several instances of 'DataCoded', one for each data encoding
+--   It exposes several instances of 'DataCodec', one for each data encoding
 --   implemented in the library without causing the name clashing that would
 --   result from importing the individual encoding modules.
 --
 module Codec.Binary.DataEncoding
-    ( encode
+    ( DataCodec
+    , encode
     , decode
     , chop
     , unchop
