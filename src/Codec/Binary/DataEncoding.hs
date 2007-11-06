@@ -26,6 +26,7 @@ module Codec.Binary.DataEncoding
     ( DataCodec
     , encode
     , decode
+    , decode'
     , chop
     , unchop
     , base16
@@ -51,6 +52,7 @@ import qualified Codec.Binary.Uu as Uu
 data DataCodec = DataCodec {
     encode :: [Word8] -> String,
     decode :: String -> Maybe [Word8],
+    decode' :: String -> [Maybe Word8],
     chop :: Int -> String -> [String],
     unchop :: [String] -> String
 }
@@ -62,6 +64,7 @@ base16 :: DataCodec
 base16 = DataCodec {
     encode=Base16.encode,
     decode=Base16.decode,
+    decode'=Base16.decode',
     chop=Base16.chop,
     unchop=Base16.unchop
 }
@@ -73,6 +76,7 @@ base32 :: DataCodec
 base32 = DataCodec {
     encode=Base32.encode,
     decode=Base32.decode,
+    decode'=Base32.decode',
     chop=Base32.chop,
     unchop=Base32.unchop
 }
@@ -84,6 +88,7 @@ base32Hex :: DataCodec
 base32Hex = DataCodec {
     encode=Base32Hex.encode,
     decode=Base32Hex.decode,
+    decode'=Base32Hex.decode',
     chop=Base32Hex.chop,
     unchop=Base32Hex.unchop
 }
@@ -95,6 +100,7 @@ base64 :: DataCodec
 base64 = DataCodec {
     encode=Base64.encode,
     decode=Base64.decode,
+    decode'=Base64.decode',
     chop=Base64.chop,
     unchop=Base64.unchop
 }
@@ -106,6 +112,7 @@ base64Url :: DataCodec
 base64Url = DataCodec {
     encode=Base64Url.encode,
     decode=Base64Url.decode,
+    decode'=Base64Url.decode',
     chop=Base64Url.chop,
     unchop=Base64Url.unchop
 }
@@ -117,6 +124,7 @@ uu :: DataCodec
 uu = DataCodec {
     encode=Uu.encode,
     decode=Uu.decode,
+    decode'=Uu.decode',
     chop=Uu.chop,
     unchop=Uu.unchop
 }

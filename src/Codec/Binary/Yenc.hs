@@ -23,6 +23,7 @@
 module Codec.Binary.YEnc
     ( encode
     , decode
+    , decode'
     , chop
     , unchop
     ) where
@@ -36,10 +37,15 @@ encode :: [Word8]
 encode _ = ""
 
 -- {{{1 decode
--- | Decode data.
+-- | Decode data (lazy).
 decode :: String
-    -> [Word8]
+    -> [Maybe Word8]
 decode _ = []
+
+-- | Decode data (strict).
+decode :: String
+    -> Maybe [Word8]
+decode _ = Just []
 
 -- {{{1 chop
 -- | Chop up a string in parts.

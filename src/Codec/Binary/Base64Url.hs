@@ -23,6 +23,7 @@
 module Codec.Binary.Base64Url
     ( encode
     , decode
+    , decode'
     , chop
     , unchop
     ) where
@@ -44,15 +45,20 @@ encode os = let
     in map swapUrlChar $ Base64.encode os
 
 -- {{{1 decode
--- | Decode data.
-decode :: String
-    -> Maybe [Word8]
-decode cs = let
+-- | Decode data (lazy).
+decode' :: String
+    -> [Maybe Word8]
+decode' = let
         unSwapUrlChar c = case c of
             '-' -> '+'
             '_' -> '/'
             _ -> c
-    in Base64.decode $ map unSwapUrlChar cs
+    in Base64.decode' . map unSwapUrlChar
+
+-- | Decode data (strict).
+decode :: String
+    -> Maybe [Word8]
+decode = sequence . decode'
 
 -- {{{1 chop
 -- | Chop up a string in parts.

@@ -23,6 +23,7 @@
 module Codec.Binary.Base64
     ( encode
     , decode
+    , decode'
     , chop
     , unchop
     ) where
@@ -90,25 +91,29 @@ encode (o1:o2:o3:os) = let
     in (foldr (\ i s -> (encodeArray ! i) : s) "" [i1, i2, i3, i4]) ++ encode os
 
 -- {{{1 decode
--- | Decode data.
-decode :: String
-    -> Maybe [Word8]
-decode s = let
+-- | Decode data (lazy).
+decode' :: String
+    -> [Maybe Word8]
+decode' = let
         dec [] = []
-        dec [eo1, eo2] = [eo1 `shiftL` 2 .|. eo2 `shiftR` 4]
-        dec [eo1, eo2, eo3] = let
+        dec [Just eo1, Just eo2] = [Just (eo1 `shiftL` 2 .|. eo2 `shiftR` 4)]
+        dec [Just eo1, Just eo2, Just eo3] = let
                 o1 = eo1 `shiftL` 2 .|. eo2 `shiftR` 4
                 o2 = eo2 `shiftL` 4 .|. eo3 `shiftR` 2
-            in [o1, o2]
-        dec (eo1:eo2:eo3:eo4:eos) = let
+            in [Just o1, Just o2]
+        dec (Just eo1:Just eo2:Just eo3:Just eo4:eos) = let
                 o1 = eo1 `shiftL` 2 .|. eo2 `shiftR` 4
                 o2 = eo2 `shiftL` 4 .|. eo3 `shiftR` 2
                 o3 = eo3 `shiftL` 6 .|. eo4
-            in o1:o2:o3:(dec eos)
+            in Just o1:Just o2:Just o3:(dec eos)
+        dec _ = [Nothing]
     in
-        if (length s `mod` 4 == 0)
-            then liftM dec $ sequence $ map (flip M.lookup decodeMap) (filter (/= '=') s)
-            else Nothing
+        dec . map (flip M.lookup decodeMap) . takeWhile (/= '=')
+
+-- | Decode data (strict).
+decode :: String
+    -> Maybe [Word8]
+decode = sequence . decode'
 
 -- {{{1 chop
 -- | Chop up a string in parts.

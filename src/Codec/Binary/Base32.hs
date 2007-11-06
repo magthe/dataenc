@@ -23,6 +23,7 @@
 module Codec.Binary.Base32
     ( encode
     , decode
+    , decode'
     , chop
     , unchop
     ) where
@@ -99,38 +100,42 @@ encode (o1:o2:o3:o4:o5:os) = let
     in (foldr (\ i s -> (encodeArray ! i) : s) "" [i1, i2, i3, i4, i5, i6, i7, i8]) ++ (encode os)
 
 -- {{{1 decode
--- | Decode data.
-decode :: String
-    -> Maybe [Word8]
-decode s = let
+-- | Decode data (lazy).
+decode' :: String
+    -> [Maybe Word8]
+decode' = let
         dec [] = []
-        dec [eo1, eo2] = [eo1 `shiftL` 3 .|. eo2 `shiftR` 2]
-        dec [eo1, eo2, eo3, eo4] = let
+        dec [Just eo1, Just eo2] = [Just (eo1 `shiftL` 3 .|. eo2 `shiftR` 2)]
+        dec [Just eo1, Just eo2, Just eo3, Just eo4] = let
                 o1 = eo1 `shiftL` 3 .|. eo2 `shiftR` 2
                 o2 = eo2 `shiftL` 6 .|. eo3 `shiftL` 1 .|. eo4 `shiftR` 4
-            in [o1, o2]
-        dec [eo1, eo2, eo3, eo4, eo5] = let
+            in [Just o1, Just o2]
+        dec [Just eo1, Just eo2, Just eo3, Just eo4, Just eo5] = let
                 o1 = eo1 `shiftL` 3 .|. eo2 `shiftR` 2
                 o2 = eo2 `shiftL` 6 .|. eo3 `shiftL` 1 .|. eo4 `shiftR` 4
                 o3 = eo4 `shiftL` 4 .|. eo5 `shiftR` 1
-            in [o1, o2, o3]
-        dec [eo1, eo2, eo3, eo4, eo5, eo6, eo7] = let
+            in [Just o1, Just o2, Just o3]
+        dec [Just eo1, Just eo2, Just eo3, Just eo4, Just eo5, Just eo6, Just eo7] = let
                 o1 = eo1 `shiftL` 3 .|. eo2 `shiftR` 2
                 o2 = eo2 `shiftL` 6 .|. eo3 `shiftL` 1 .|. eo4 `shiftR` 4
                 o3 = eo4 `shiftL` 4 .|. eo5 `shiftR` 1
                 o4 = eo5 `shiftL` 7 .|. eo6 `shiftL` 2 .|. eo7 `shiftR` 3
-            in [o1, o2, o3, o4]
-        dec (eo1:eo2:eo3:eo4:eo5:eo6:eo7:eo8:eos) = let
+            in [Just o1, Just o2, Just o3, Just o4]
+        dec (Just eo1:Just eo2:Just eo3:Just eo4:Just eo5:Just eo6:Just eo7:Just eo8:eos) = let
                 o1 = eo1 `shiftL` 3 .|. eo2 `shiftR` 2
                 o2 = eo2 `shiftL` 6 .|. eo3 `shiftL` 1 .|. eo4 `shiftR` 4
                 o3 = eo4 `shiftL` 4 .|. eo5 `shiftR` 1
                 o4 = eo5 `shiftL` 7 .|. eo6 `shiftL` 2 .|. eo7 `shiftR` 3
                 o5 = eo7 `shiftL` 5 .|. eo8
-            in o1:o2:o3:o4:o5:(dec eos)
+            in Just o1:Just o2:Just o3:Just o4:Just o5:(dec eos)
+        dec _ = [Nothing]
     in
-        if (length s `mod` 8 == 0)
-            then liftM dec $ sequence $ map (flip M.lookup decodeMap) (filter (/= '=') s)
-            else Nothing
+        dec . map (flip M.lookup decodeMap) . takeWhile (/= '=')
+
+-- | Decode data (strict).
+decode :: String
+    -> Maybe [Word8]
+decode = sequence . decode'
 
 -- {{{1 chop
 -- | Chop up a string in parts.

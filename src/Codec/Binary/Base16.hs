@@ -23,6 +23,7 @@
 module Codec.Binary.Base16
     ( encode
     , decode
+    , decode'
     , chop
     , unchop
     ) where
@@ -59,17 +60,21 @@ encode os = let
     in map (encodeArray !) $ foldr (\ o l -> (splitOctet o) ++ l) [] os
 
 -- {{{1 decode
--- | Decode data.
+-- | Decode data (lazy).
+decode' :: String
+    -> [Maybe Word8]
+decode' = let
+        dec [] = []
+        dec (Just o1:Just o2:os) =
+                    Just (o1 `shiftL` 4 .|. o2) : dec os
+        dec _ = [Nothing]
+    in
+        dec . map (flip M.lookup decodeMap)
+
+-- | Decode data (strict).
 decode :: String
     -> Maybe [Word8]
-decode s = let
-        dec [] = []
-        dec (o1:o2:os) =
-                    (o1 `shiftL` 4 .|. o2) : dec os
-    in
-        if (length s `mod` 2 == 0)
-            then liftM dec $ sequence $ map (flip M.lookup decodeMap) s
-            else Nothing
+decode = sequence . decode'
 
 -- {{{1 chop
 -- | Chop up a string in parts.
