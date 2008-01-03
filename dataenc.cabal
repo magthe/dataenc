@@ -1,5 +1,5 @@
 name: dataenc
-version: 0.10.1
+version: 0.10.2
 license: LGPL
 license-file: COPYING.LESSER
 author: Magnus Therning
@@ -11,7 +11,7 @@ description: Data encoding library currently providing Uuencode, Base64,
         Base64Url, Base32, Base32Hex, and Base16.
 hs-source-dirs: src
 extra-source-files: UT.hs QC.hs COPYING
-build-depends: base
+build-depends: array, base, containers
 exposed-modules:
     Codec.Binary.DataEncoding
     Codec.Binary.Base16
