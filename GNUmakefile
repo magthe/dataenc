@@ -1,9 +1,11 @@
 .PHONY: all clean markup report test
 
 TESTS = UT QC
+ifeq (,$(shell ghc-pkg list dataenc | grep dataenc))
+GHCOPTS = -fhpc -isrc
+else
 GHCOPTS = -fhpc -hide-package dataenc -isrc
-# us this if dataenc isn't installed
-#GHCOPTS = -fhpc -isrc
+endif
 
 % : %.hs
 	ghc --make $(GHCOPTS) $<
