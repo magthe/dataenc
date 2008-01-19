@@ -133,7 +133,8 @@ chop :: Int     -- ^ length (@1 < n <= 65@, not checked)
     -> [String]
 chop n "" = []
 chop n s = let
-        enc_len = (n - 1) `div` 4 * 4
+        enc_len | n < 5 = 4
+                | otherwise = (n - 1) `div` 4 * 4
         enc_line = take enc_len s
         act_len = fromIntegral $ case (length enc_line `divMod` 4) of
             (l, 0) -> l * 3

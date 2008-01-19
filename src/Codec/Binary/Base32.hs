@@ -146,7 +146,8 @@ chop :: Int     -- ^ length of individual lines
     -> [String]
 chop n "" = []
 chop n s = let
-        enc_len = n `div` 8 * 8
+        enc_len | n < 8 = 8
+                | otherwise = n `div` 8 * 8
     in (take enc_len s) : chop n (drop enc_len s)
 
 -- {{{1 unchop

@@ -130,7 +130,8 @@ chop :: Int     -- ^ length of individual lines
     -> [String]
 chop n "" = []
 chop n s = let
-        enc_len = n `div` 4 * 4
+        enc_len | n < 4 = 4
+                | otherwise = n `div` 4 * 4
     in (take enc_len s) : chop n (drop enc_len s)
 
 -- {{{1 unchop
