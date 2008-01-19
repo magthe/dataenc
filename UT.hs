@@ -52,6 +52,13 @@ uuTestData2 =
     ]
 uuTests2 = buildTestList uuTestData2
 
+uuTestsFail = test
+    [ "uu decode short" ~: Nothing ~=? Uu.decode "A"
+    , "uu decode' short" ~: [Nothing] ~=? Uu.decode' "A"
+    , "uu decode illegal" ~: Nothing ~=? Uu.decode "aa"
+    , "uu decode' illegal" ~: [Nothing] ~=? Uu.decode' "aa"
+    ]
+
 -- {{{1 base64 tests
 base64TestData =
     [ ("base64", "empty", "", [], Base64.encode, Base64.decode)
@@ -66,6 +73,13 @@ base64TestData =
     , ("base64", "Example", "RXhhbXBsZQ==", [69,120,97,109,112,108,101], Base64.encode, Base64.decode)
     ]
 base64Tests = buildTestList base64TestData
+
+base64TestsFail = test
+    [ "base64 decode short" ~: Nothing ~=? Base64.decode "A"
+    , "base64 decode' short" ~: [Nothing] ~=? Base64.decode' "A"
+    , "base64 decode illegal" ~: Nothing ~=? Base64.decode "!!"
+    , "base64 decode' illegal" ~: [Nothing] ~=? Base64.decode' "!!"
+    ]
 
 -- {{{1 base64url tests
 base64UrlTestData =
@@ -88,6 +102,13 @@ base32TestData =
     ]
 base32Tests = buildTestList base32TestData
 
+base32TestsFail = test
+    [ "base32 decode short" ~: Nothing ~=? Base32.decode "A"
+    , "base32 decode' short" ~: [Nothing] ~=? Base32.decode' "A"
+    , "base32 decode illegal" ~: Nothing ~=? Base32.decode "gh"
+    , "base32 decode' illegal" ~: [Nothing] ~=? Base32.decode' "gh"
+    ]
+
 -- {{{1 base32hex tests
 base32HexTestData =
     [ ("base32hex", "empty", "", [], Base32Hex.encode, Base32Hex.decode)
@@ -99,6 +120,13 @@ base32HexTestData =
     , ("base32hex", "foobar", "CPNMUOJ1E8======", [102,111,111,98,97,114], Base32Hex.encode, Base32Hex.decode)
     ]
 base32HexTests = buildTestList base32HexTestData
+
+base32HexTestsFail = test
+    [ "base32hex decode short" ~: Nothing ~=? Base32Hex.decode "A"
+    , "base32hex decode' short" ~: [Nothing] ~=? Base32Hex.decode' "A"
+    , "base32hex decode illegal" ~: Nothing ~=? Base32Hex.decode "gh"
+    , "base32hex decode' illegal" ~: [Nothing] ~=? Base32Hex.decode' "gh"
+    ]
 
 -- {{{1 base16 (hex)
 base16TestData =
@@ -112,8 +140,21 @@ base16TestData =
     ]
 base16Tests = buildTestList base16TestData
 
+base16TestsFail = test
+    [ "base16 decode short" ~: Nothing ~=? Base16.decode "A"
+    , "base16 decode' short" ~: [Nothing] ~=? Base16.decode' "A"
+    , "base16 decode illegal" ~: Nothing ~=? Base16.decode "GH"
+    , "base16 decode' illegal" ~: [Nothing] ~=? Base16.decode' "GH"
+    ]
+
 -- {{{1 test list and main
-testList = TestList [uuTests, uuTests2, base64Tests, base64UrlTests, base32Tests, base32HexTests, base16Tests ]
+testList = TestList
+    [ uuTests, uuTests2, uuTestsFail
+    , base64Tests, base64TestsFail
+    , base64UrlTests
+    , base32Tests, base32TestsFail
+    , base32HexTests, base32HexTestsFail
+    , base16Tests,  base16TestsFail ]
 
 main :: IO ()
 main = do
