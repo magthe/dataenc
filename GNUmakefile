@@ -28,4 +28,6 @@ clean:
 	rm -f *~ UT QC *.tix *.html
 	rm -rf .hpc
 	rm -f $(patsubst %,%.o,$(TESTS)) $(patsubst %,%.hi,$(TESTS))
-	rm -f src/Codec/Binary/{*.o,*.hi,*~}
+	rm -f src/Codec/Binary/*.o
+	rm -f src/Codec/Binary/*.hi
+	rm -f src/Codec/Binary/*~
