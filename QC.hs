@@ -59,7 +59,7 @@ prop_uuCombined ws = ws == (fromJust $ Uu.decode $ Uu.unchop $ Uu.chop 45 $ Uu.e
 prop_base64Encode ws = ws == (fromJust $ Base64.decode $ Base64.encode ws)
     where types = ws::[Word8]
 
-prop_base64Chop s = s == (Base64.unchop $ Base64.chop 64 s)
+prop_base64Chop s = s == (Base64.unchop $ Base64.chop 4 s)
     where types = s::String
 
 -- {{{1 base64url properties
@@ -73,7 +73,7 @@ prop_base64UrlChop s = s == (Base64Url.unchop $ Base64Url.chop 64 s)
 prop_base32Encode ws = ws == (fromJust $ Base32.decode $ Base32.encode ws)
     where types = ws::[Word8]
 
-prop_base32Chop s = s == (Base32.unchop $ Base32.chop 64 s)
+prop_base32Chop s = s == (Base32.unchop $ Base32.chop 8 s)
     where types = s::String
 
 -- {{{1 base32hex
@@ -87,7 +87,7 @@ prop_base32HexChop s = s == (Base32Hex.unchop $ Base32Hex.chop 64 s)
 prop_base16Encode ws = ws == (fromJust $ Base16.decode $ Base16.encode ws)
     where types = ws::[Word8]
 
-prop_base16Chop s = s == (Base16.unchop $ Base16.chop 16 s)
+prop_base16Chop s = s == (Base16.unchop $ Base16.chop 6 s)
     where types = s::String
 
 -- {{{1 main
