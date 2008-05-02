@@ -57,66 +57,36 @@ decodeMap = M.fromList [(snd i, fst i) | i <- _encMap]
 -- | Encode data.
 encode :: [Word8]
     -> String
-encode [] = ""
-encode [o] = let
-        i1 = o `shiftR` 3
-        i2 = o `shiftL` 2 .&. 0x1f
-    in (encodeArray ! i1) : (encodeArray ! i2) : "======"
-encode [o1, o2] = let
-        i1 = o1 `shiftR` 3
-        i2 = (o1 `shiftL` 2 .|. o2 `shiftR` 6) .&. 0x1f
-        i3 = o2 `shiftR` 1 .&. 0x1f
-        i4 = o2 `shiftL` 4 .&. 0x1f
-    in foldr (\ i s -> (encodeArray ! i) : s) "====" [i1, i2, i3, i4]
-encode [o1, o2, o3] = let
-        i1 = o1 `shiftR` 3
-        i2 = (o1 `shiftL` 2 .|. o2 `shiftR` 6) .&. 0x1f
-        i3 = o2 `shiftR` 1 .&. 0x1f
-        i4 = (o2 `shiftL` 4 .|. o3 `shiftR` 4) .&. 0x1f
-        i5 = o3 `shiftL` 1 .&. 0x1f
-    in foldr (\ i s -> (encodeArray ! i) : s) "===" [i1, i2, i3, i4, i5]
-encode [o1, o2, o3, o4] = let
-        i1 = o1 `shiftR` 3
-        i2 = (o1 `shiftL` 2 .|. o2 `shiftR` 6) .&. 0x1f
-        i3 = o2 `shiftR` 1 .&. 0x1f
-        i4 = (o2 `shiftL` 4 .|. o3 `shiftR` 4) .&. 0x1f
-        i5 = (o3 `shiftL` 1 .|. o4 `shiftR` 7) .&. 0x1f
-        i6 = o4 `shiftR` 2 .&. 0x1f
-        i7 = o4 `shiftL` 3 .&. 0x1f
-    in foldr (\ i s -> (encodeArray ! i) : s) "=" [i1, i2, i3, i4, i5, i6, i7]
-encode (o1:o2:o3:o4:o5:os) = let
-        i1 = o1 `shiftR` 3
-        i2 = (o1 `shiftL` 2 .|. o2 `shiftR` 6) .&. 0x1f
-        i3 = o2 `shiftR` 1 .&. 0x1f
-        i4 = (o2 `shiftL` 4 .|. o3 `shiftR` 4) .&. 0x1f
-        i5 = (o3 `shiftL` 1 .|. o4 `shiftR` 7) .&. 0x1f
-        i6 = o4 `shiftR` 2 .&. 0x1f
-        i7 = (o4 `shiftL` 3 .|. o5 `shiftR` 5) .&. 0x1f
-        i8 = o5 .&. 0x1f
-    in (foldr (\ i s -> (encodeArray ! i) : s) "" [i1, i2, i3, i4, i5, i6, i7, i8]) ++ (encode os)
+encode = let
+        pad n = take n $ repeat 0
+        enc [] = ""
+        enc l@[o] = (++ "======") . take 2 . enc $ l ++ pad 4
+        enc l@[o1, o2] = (++ "====") . take 4 . enc $ l ++ pad 3
+        enc l@[o1, o2, o3] = (++ "===") . take 5 . enc $ l ++ pad 2
+        enc l@[o1, o2, o3, o4] = (++ "=") . take 7 . enc $ l ++ pad 1
+        enc (o1:o2:o3:o4:o5:os) = let
+                i1 = o1 `shiftR` 3
+                i2 = (o1 `shiftL` 2 .|. o2 `shiftR` 6) .&. 0x1f
+                i3 = o2 `shiftR` 1 .&. 0x1f
+                i4 = (o2 `shiftL` 4 .|. o3 `shiftR` 4) .&. 0x1f
+                i5 = (o3 `shiftL` 1 .|. o4 `shiftR` 7) .&. 0x1f
+                i6 = o4 `shiftR` 2 .&. 0x1f
+                i7 = (o4 `shiftL` 3 .|. o5 `shiftR` 5) .&. 0x1f
+                i8 = o5 .&. 0x1f
+            in (foldr (\ i s -> (encodeArray ! i) : s) "" [i1, i2, i3, i4, i5, i6, i7, i8]) ++ (enc os)
+    in enc
 
 -- {{{1 decode
 -- | Decode data (lazy).
 decode' :: String
     -> [Maybe Word8]
 decode' = let
+        pad n = take n $ repeat $ Just 0
         dec [] = []
-        dec [Just eo1, Just eo2] = [Just (eo1 `shiftL` 3 .|. eo2 `shiftR` 2)]
-        dec [Just eo1, Just eo2, Just eo3, Just eo4] = let
-                o1 = eo1 `shiftL` 3 .|. eo2 `shiftR` 2
-                o2 = eo2 `shiftL` 6 .|. eo3 `shiftL` 1 .|. eo4 `shiftR` 4
-            in [Just o1, Just o2]
-        dec [Just eo1, Just eo2, Just eo3, Just eo4, Just eo5] = let
-                o1 = eo1 `shiftL` 3 .|. eo2 `shiftR` 2
-                o2 = eo2 `shiftL` 6 .|. eo3 `shiftL` 1 .|. eo4 `shiftR` 4
-                o3 = eo4 `shiftL` 4 .|. eo5 `shiftR` 1
-            in [Just o1, Just o2, Just o3]
-        dec [Just eo1, Just eo2, Just eo3, Just eo4, Just eo5, Just eo6, Just eo7] = let
-                o1 = eo1 `shiftL` 3 .|. eo2 `shiftR` 2
-                o2 = eo2 `shiftL` 6 .|. eo3 `shiftL` 1 .|. eo4 `shiftR` 4
-                o3 = eo4 `shiftL` 4 .|. eo5 `shiftR` 1
-                o4 = eo5 `shiftL` 7 .|. eo6 `shiftL` 2 .|. eo7 `shiftR` 3
-            in [Just o1, Just o2, Just o3, Just o4]
+        dec l@[Just eo1, Just eo2] = take 1 . dec $ l ++ pad 6
+        dec l@[Just eo1, Just eo2, Just eo3, Just eo4] = take 2 . dec $ l ++ pad 4
+        dec l@[Just eo1, Just eo2, Just eo3, Just eo4, Just eo5] = take 3 . dec $ l ++ pad 3
+        dec l@[Just eo1, Just eo2, Just eo3, Just eo4, Just eo5, Just eo6, Just eo7] = take 4 . dec $ l ++ pad 1
         dec (Just eo1:Just eo2:Just eo3:Just eo4:Just eo5:Just eo6:Just eo7:Just eo8:eos) = let
                 o1 = eo1 `shiftL` 3 .|. eo2 `shiftR` 2
                 o2 = eo2 `shiftL` 6 .|. eo3 `shiftL` 1 .|. eo4 `shiftR` 4

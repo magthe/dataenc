@@ -64,34 +64,28 @@ decodeMap = M.fromList [(snd i, fst i) | i <- _encMap]
 -- | Encode data.
 encode :: [Word8]
     -> String
-encode [] = ""
-encode [o] = let
-        i1 = o `shiftR` 2
-        i2 = o `shiftL` 4 .&. 0x3f
-    in (encodeArray ! i1) : (encodeArray ! i2) : ""
-encode [o1, o2] = let
-        i1 = o1 `shiftR` 2
-        i2 = (o1 `shiftL` 4 .|. o2 `shiftR` 4) .&. 0x3f
-        i3 = o2 `shiftL` 2 .&. 0x3f
-    in foldr (\ i s-> (encodeArray ! i) : s) "" [i1, i2, i3]
-encode (o1:o2:o3:os) = let
-        i1 = o1 `shiftR` 2
-        i2 = (o1 `shiftL` 4 .|. o2 `shiftR` 4) .&. 0x3f
-        i3 = (o2 `shiftL` 2 .|. o3 `shiftR` 6) .&. 0x3f
-        i4 = o3 .&. 0x3f
-    in (foldr (\ i s -> (encodeArray ! i) : s) "" [i1, i2, i3, i4]) ++ encode os
+encode = let
+        pad n = take n $ repeat 0
+        enc [] = ""
+        enc l@[o] = take 2 . enc $ l ++ pad 2
+        enc l@[o1, o2] = take 3 . enc $ l ++ pad 1
+        enc (o1:o2:o3:os) = let
+                i1 = o1 `shiftR` 2
+                i2 = (o1 `shiftL` 4 .|. o2 `shiftR` 4) .&. 0x3f
+                i3 = (o2 `shiftL` 2 .|. o3 `shiftR` 6) .&. 0x3f
+                i4 = o3 .&. 0x3f
+            in (foldr (\ i s -> (encodeArray ! i) : s) "" [i1, i2, i3, i4]) ++ enc os
+    in enc
 
 -- {{{1 decode
 -- | Decode data (lazy).
 decode' :: String
     -> [Maybe Word8]
 decode' = let
+        pad n = take n . repeat $ Just 0
         dec [] = []
-        dec [Just eo1, Just eo2] = [Just (eo1 `shiftL` 2 .|. eo2 `shiftR` 4)]
-        dec [Just eo1, Just eo2, Just eo3] = let
-                o1 = eo1 `shiftL` 2 .|. eo2 `shiftR` 4
-                o2 = eo2 `shiftL` 4 .|. eo3 `shiftR` 2
-            in [Just o1, Just o2]
+        dec l@[Just eo1, Just eo2] = take 1 . dec $ l ++ pad 2
+        dec l@[Just eo1, Just eo2, Just eo3] = take 2 . dec $ l ++ pad 1
         dec (Just eo1:Just eo2:Just eo3:Just eo4:eos) = let
                 o1 = eo1 `shiftL` 2 .|. eo2 `shiftR` 4
                 o2 = eo2 `shiftL` 4 .|. eo3 `shiftR` 2
