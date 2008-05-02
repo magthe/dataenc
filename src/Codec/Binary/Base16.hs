@@ -35,21 +35,20 @@ import Data.Maybe
 import Data.Word
 import qualified Data.Map as M
 
+-- {{{1 enc/dec map
+_encMap =
+    [ (0, '0'), (1, '1'), (2, '2'), (3, '3'), (4, '4')
+    , (5, '5'), (6, '6'), (7, '7'), (8, '8'), (9, '9')
+    , (10, 'A'), (11, 'B'), (12, 'C'), (13, 'D'), (14, 'E')
+    , (15, 'F') ]
+
 -- {{{1 encodeArray
 encodeArray :: Array Word8 Char
-encodeArray = array (0, 64) [
-    (0, '0'), (1, '1'), (2, '2'), (3, '3'), (4, '4'),
-    (5, '5'), (6, '6'), (7, '7'), (8, '8'), (9, '9'),
-    (10, 'A'), (11, 'B'), (12, 'C'), (13, 'D'), (14, 'E'),
-    (15, 'F') ]
+encodeArray = array (0, 64) _encMap
 
 -- {{{1 decodeMap
 decodeMap :: M.Map Char Word8
-decodeMap  = M.fromList [
-    ('0', 0), ('1', 1), ('2', 2), ('3', 3), ('4', 4),
-    ('5', 5), ('6', 6), ('7', 7), ('8', 8), ('9', 9),
-    ('A', 10), ('B', 11), ('C', 12), ('D', 13), ('E', 14),
-    ('F', 15) ]
+decodeMap  = M.fromList [(snd i, fst i) | i <- _encMap]
 
 -- {{{1 encode
 -- | Encode data.
