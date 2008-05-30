@@ -55,6 +55,28 @@ uuTestsFail = test
     , "uu decode' illegal" ~: [Nothing] ~=? decode' uu "aa"
     ]
 
+-- {{{1 base85 tests
+base85TestData =
+    [ ("base85", "empty", "", [], base85)
+    , ("base85", "f", "Ac", [102], base85)
+    , ("base85", "fo", "Ao@", [102,111], base85)
+    , ("base85", "foo", "AoDS", [102,111,111], base85)
+    , ("base85", "foob", "AoDTs", [102,111,111,98], base85)
+    , ("base85", "fooba", "AoDTs@/", [102,111,111,98,97], base85)
+    , ("base85", "foobar", "AoDTs@<)", [102,111,111,98,97,114], base85)
+    , ("base85", "\0", "!!", [0], base85)
+    , ("base85", "foob\0\0\0\0ar", "AoDTszEW", [102,111,111,98,0,0,0,0,114], base85)
+    , ("base85", "Example", "7<i6XE,9(", [69,120,97,109,112,108,101], base85)
+    ]
+base85Tests = buildTestList base85TestData
+
+base85TestsFail = test
+    [ "base85 decode short" ~: Nothing ~=? decode base85 "A"
+    , "base85 decode' short" ~: [Nothing] ~=? decode' base85 "A"
+    , "base85 decode illegal" ~: Nothing ~=? decode base85 "!z"
+    , "base85 decode' illegal" ~: [Nothing] ~=? decode' base85 "!z"
+    ]
+
 -- {{{1 base64 tests
 base64TestData =
     [ ("base64", "empty", "", [], base64)
@@ -64,8 +86,8 @@ base64TestData =
     , ("base64", "foob", "Zm9vYg==", [102,111,111,98], base64)
     , ("base64", "fooba", "Zm9vYmE=", [102,111,111,98,97], base64)
     , ("base64", "foobar", "Zm9vYmFy", [102,111,111,98,97,114], base64)
-    , ("base64url", "\0", "AA==", [0], base64)
-    , ("base64url", "\255", "/w==", [255], base64)
+    , ("base64", "\0", "AA==", [0], base64)
+    , ("base64", "\255", "/w==", [255], base64)
     , ("base64", "Example", "RXhhbXBsZQ==", [69,120,97,109,112,108,101], base64)
     ]
 base64Tests = buildTestList base64TestData
@@ -146,6 +168,7 @@ base16TestsFail = test
 -- {{{1 test list and main
 testList = TestList
     [ uuTests, uuTests2, uuTestsFail
+    , base85Tests, base85TestsFail
     , base64Tests, base64TestsFail
     , base64UrlTests
     , base32Tests, base32TestsFail

@@ -24,6 +24,7 @@ import Data.Word
 import Test.QuickCheck
 
 import qualified Codec.Binary.Uu as Uu
+import qualified Codec.Binary.Base85 as Base85
 import qualified Codec.Binary.Base64 as Base64
 import qualified Codec.Binary.Base64Url as Base64Url
 import qualified Codec.Binary.Base32 as Base32
@@ -54,6 +55,13 @@ prop_uuChop s = properLength s ==> s == (Uu.unchop . Uu.chop 45) s
 
 prop_uuCombined ws = ws == (fromJust $ Uu.decode $ Uu.unchop $ Uu.chop 45 $ Uu.encode ws)
     where types = ws::[Word8]
+
+-- {{{1 base85 properties
+prop_base85Encode ws = ws == (fromJust $ Base85.decode $ Base85.encode ws)
+    where types = ws::[Word8]
+
+prop_base85Chop s = s == (Base85.unchop $ Base85.chop 20 s)
+    where types = s::String
 
 -- {{{1 base64 properties
 prop_base64Encode ws = ws == (fromJust $ Base64.decode $ Base64.encode ws)
@@ -95,6 +103,8 @@ main = do
     quickCheck prop_uuEncode
     quickCheck prop_uuChop
     quickCheck prop_uuCombined
+    quickCheck prop_base85Encode
+    quickCheck prop_base85Chop
     quickCheck prop_base64Encode
     quickCheck prop_base64Chop
     quickCheck prop_base64UrlEncode
