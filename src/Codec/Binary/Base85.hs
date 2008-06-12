@@ -18,7 +18,7 @@
 
 -- | Base85 module.
 --
---   Implemented as described at http://en.wikipedia.org/wiki/Ascii85.
+--   Implemented as described at <http://en.wikipedia.org/wiki/Ascii85>.
 module Codec.Binary.Base85
     ( encode
     , decode
@@ -48,6 +48,8 @@ decodeMap = M.fromList [(snd i, fst i) | i <- _encMap]
 
 -- {{{1 encode
 -- | Encode data.
+--
+--   The result will not be enclosed in \<~ ~\>.
 encode :: [Word8]
     -> String
 encode [] = ""
@@ -67,6 +69,8 @@ encode (b1:b2:b3:b4:bs) = (foldr (\ i s -> (encodeArray ! i) : s) "" group) ++ (
 
 -- {{{1 decode
 -- | Decode data (lazy).
+--
+--   The input must not be enclosed in \<~ ~\>.
 decode' :: String
     -> [Maybe Word8]
 decode' [] = []
@@ -89,6 +93,8 @@ decode' cs = let
     in (dec . map (flip M.lookup decodeMap) $ take 5 cs) ++ decode' (drop 5 cs)
 
 -- | Decode data (strict).
+--
+--   The input must not be enclosed in \<~ ~\>.
 decode :: String
     -> Maybe [Word8]
 decode = sequence . decode'
