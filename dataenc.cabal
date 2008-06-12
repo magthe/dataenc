@@ -3,6 +3,7 @@ version: 0.11
 license: LGPL
 license-file: COPYING.LESSER
 cabal-version: >= 1.2
+build-type: Simple
 author: Magnus Therning
 maintainer: magnus@therning.org
 copyright: Magnus Therning, 2007
