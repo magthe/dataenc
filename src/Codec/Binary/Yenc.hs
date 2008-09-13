@@ -20,6 +20,9 @@
 --
 --   Implementation based on the specification found at
 --   <http://yence.sourceforge.net/docs/protocol/version1_3_draft.html>.
+--
+--   Further documentation and information can be found at
+--   <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.YEnc
     ( encode
     , decode

@@ -19,6 +19,9 @@
 -- | Base85 module.
 --
 --   Implemented as described at <http://en.wikipedia.org/wiki/Ascii85>.
+--
+--   Further documentation and information can be found at
+--   <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Base85
     ( encode
     , decode

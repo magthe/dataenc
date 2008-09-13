@@ -21,6 +21,9 @@
 --   Uuencoding is notoriously badly specified.  This implementation is
 --   compatible with the GNU Sharutils
 --   (<http://www.gnu.org/software/sharutils/>).
+--
+--   Further documentation and information can be found at
+--   <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Uu
     ( encode
     , decode

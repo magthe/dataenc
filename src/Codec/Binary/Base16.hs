@@ -20,6 +20,9 @@
 --
 --   Implemented as specified in RFC 4648
 --   (<http://tools.ietf.org/html/rfc4648>).
+--
+--   Further documentation and information can be found at
+--   <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Base16
     ( encode
     , decode

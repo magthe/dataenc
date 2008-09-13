@@ -22,6 +22,8 @@
 --   implemented in the library without causing the name clashing that would
 --   result from importing the individual encoding modules.
 --
+--   Further documentation and information can be found at
+--   <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.DataEncoding
     ( DataCodec
     , encode
