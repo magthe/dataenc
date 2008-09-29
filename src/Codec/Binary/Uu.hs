@@ -1,29 +1,14 @@
-{- Copyright © 2007 Magnus Therning
- -
- - This file is part of dataenc.
- -
- - Dataenc is free software: you can redistribute it and/or modify it under
- - the terms of the GNU Lesser General Public License as published by the
- - Free Software Foundation, either version 3 of the License, or (at your
- - option) any later version.
- -
- - Dataenc is distributed in the hope that it will be useful, but WITHOUT
- - ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- - FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
- - License for more details.
- -
- - You should have received a copy of the GNU Lesser General Public License
- - along with dataenc.  If not, see <http://www.gnu.org/licenses/>
- -}
-
--- | Uuencoding module.
+-- |
+-- Module    : Codec.Binary.Uu
+-- Copyright : (c) 2007 Magnus Therning
+-- License   : BSD3
 --
---   Uuencoding is notoriously badly specified.  This implementation is
---   compatible with the GNU Sharutils
---   (<http://www.gnu.org/software/sharutils/>).
+-- Uuencoding is notoriously badly specified.  This implementation is
+-- compatible with the GNU Sharutils
+-- (<http://www.gnu.org/software/sharutils/>).
 --
---   Further documentation and information can be found at
---   <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
+-- Further documentation and information can be found at
+-- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Uu
     ( encode
     , decode
