@@ -12,6 +12,7 @@ import System.Exit
 import Data.Maybe
 
 import Codec.Binary.DataEncoding
+import qualified Codec.Binary.Yenc as Yenc
 
 -- {{{1 buildTestList
 -- builds a list of successful tests based on a tuple (suite, description,
@@ -152,6 +153,21 @@ base16TestsFail = test
     , "base16 decode' illegal" ~: [Nothing] ~=? decode' base16 "GH"
     ]
 
+-- {{{1 yEncoding
+yencTests = test
+    [ "yEnc encode empty" ~: [] ~=? Yenc.encode []
+    , "yEnc decode empty" ~: Just [] ~=? Yenc.decode []
+    , "yEnc encode 'f'" ~: [0x90] ~=? Yenc.encode [0x66]
+    , "yEnc decode enc('f')" ~: Just [0x66] ~=? Yenc.decode [0x90]
+    , "yEnc encode 'foobar'" ~: [0x90, 0x99, 0x99, 0x8c, 0x8b, 0x9c] ~=? Yenc.encode [0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72]
+    , "yEnc decode enc('foobar')" ~: Just [0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72] ~=? Yenc.decode [0x90, 0x99, 0x99, 0x8c, 0x8b, 0x9c]
+    , "yEnc encode [0xd6, 0xd7]" ~: [0x3d, 0x40, 0x01] ~=? Yenc.encode [0xd6, 0xd7]
+    , "yEnc decode enc([0xd6, 0xd7])" ~:  Just [0xd6, 0xd7] ~=? Yenc.decode [0x3d, 0x40, 0x01]
+    , "yEnc encode criticals" ~: [0x3d, 0x40, 0x3d, 0x4a, 0x3d, 0x4d, 0x3d, 0x7d] ~=? Yenc.encode [0xd6, 0xe0, 0xe3, 0x13]
+    , "yEnc decode criticals" ~:  Just [0xd6, 0xe0, 0xe3, 0x13] ~=? Yenc.decode [0x3d, 0x40, 0x3d, 0x4a, 0x3d, 0x4d, 0x3d, 0x7d]
+    , "yEnc chop" ~: [[0x3d, 0x40], [0x01, 0x3d, 0x4a]] ~=? Yenc.chop 2 [0x3d, 0x40, 0x01, 0x3d, 0x4a]
+    ]
+
 -- {{{1 test list and main
 testList = TestList
     [ uuTests, uuTests2, uuTestsFail
@@ -160,7 +176,9 @@ testList = TestList
     , base64UrlTests
     , base32Tests, base32TestsFail
     , base32HexTests, base32HexTestsFail
-    , base16Tests,  base16TestsFail ]
+    , base16Tests,  base16TestsFail
+    , yencTests
+    ]
 
 main :: IO ()
 main = do

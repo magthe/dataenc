@@ -17,6 +17,7 @@ import qualified Codec.Binary.Base64Url as Base64Url
 import qualified Codec.Binary.Base32 as Base32
 import qualified Codec.Binary.Base32Hex as Base32Hex
 import qualified Codec.Binary.Base16 as Base16
+import qualified Codec.Binary.Yenc as Yenc
 
 -- {{{1 Arbitrary instances
 instance Arbitrary Char where
@@ -85,6 +86,13 @@ prop_base16Encode ws = ws == (fromJust $ Base16.decode $ Base16.encode ws)
 prop_base16Chop s = s == (Base16.unchop $ Base16.chop 6 s)
     where types = s::String
 
+-- {{{1 yEncoding
+prop_yencEncode ws = ws == (fromJust $ Yenc.decode $ Yenc.encode ws)
+    where types = ws ::[Word8]
+
+prop_yencChop ws = ws == (Yenc.unchop $ Yenc.chop 6 ws)
+    where types = ws :: [Word8]
+
 -- {{{1 main
 main = do
     quickCheck prop_uuEncode
@@ -102,3 +110,5 @@ main = do
     quickCheck prop_base32HexChop
     quickCheck prop_base16Encode
     quickCheck prop_base16Chop
+    quickCheck prop_yencEncode
+    quickCheck prop_yencChop

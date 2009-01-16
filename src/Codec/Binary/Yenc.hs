@@ -8,7 +8,7 @@
 --
 -- Further documentation and information can be found at
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
-module Codec.Binary.YEnc
+module Codec.Binary.Yenc
     ( encode
     , decode
     , decode'
@@ -16,34 +16,48 @@ module Codec.Binary.YEnc
     , unchop
     ) where
 
-import Data.Word.Word8
+import Data.Word
+
+_criticals_in = [0xd6, 0xe0, 0xe3, 0x13]
+_equal = 0x3d
 
 -- {{{1 encode
 -- | Encode data.
 encode :: [Word8]
-    -> String
-encode _ = ""
+    -> [Word8]
+encode (d:ds)
+    | d `elem` _criticals_in = _equal : d + 106 : encode ds
+    | otherwise = d + 42 : encode ds
+encode _ = []
 
 -- {{{1 decode
 -- | Decode data (lazy).
-decode :: String
+decode' :: [Word8]
     -> [Maybe Word8]
-decode _ = []
+decode' (0x3d:d:ds) = Just (d + 150) : decode' ds
+decode' (d:ds) = Just (d + 214) : decode' ds
+decode' _ = []
 
 -- | Decode data (strict).
-decode :: String
+decode :: [Word8]
     -> Maybe [Word8]
-decode _ = Just []
+decode = sequence . decode'
 
 -- {{{1 chop
 -- | Chop up a string in parts.
 chop :: Int     -- ^ length of individual lines
-    -> String
-    -> [String]
-chop _ _ = []
+    -> [Word8]
+    -> [[Word8]]
+chop _ [] = []
+chop n ws = let
+        (p1, p2) = splitAt n ws
+    in
+        if (last p1 == _equal)
+            then (p1 ++ (take 1 p2)) : chop n (drop 1 p2)
+            else p1 : chop n p2
 
 -- {{{1 unchop
 -- | Concatenate the strings into one long string.
-unchop :: [String]
-    -> String
-unchop _ = ""
+unchop :: [[Word8]]
+    -> [Word8]
+unchop = concat
