@@ -3,12 +3,13 @@
  - License   : BSD3
  -}
 
-module Main
+module DataencQC
     where
 
 import Data.Maybe
 import Data.Word
 import Test.QuickCheck
+import Test.Framework.Providers.QuickCheck2
 
 import qualified Codec.Binary.Uu as Uu
 import qualified Codec.Binary.Base85 as Base85
@@ -20,12 +21,6 @@ import qualified Codec.Binary.Base16 as Base16
 import qualified Codec.Binary.Yenc as Yenc
 
 -- {{{1 Arbitrary instances
-instance Arbitrary Char where
-    arbitrary = do
-        n <- choose ((fromEnum (minBound::Char))::Int,
-                (fromEnum (maxBound::Char))::Int)
-        return $ toEnum n
-
 instance Arbitrary Word8 where
     arbitrary = do
         n <- choose ((fromIntegral (minBound::Word8))::Int,
@@ -93,22 +88,23 @@ prop_yencEncode ws = ws == (fromJust $ Yenc.decode $ Yenc.encode ws)
 prop_yencChop ws = ws == (Yenc.unchop $ Yenc.chop 6 ws)
     where types = ws :: [Word8]
 
--- {{{1 main
-main = do
-    quickCheck prop_uuEncode
-    quickCheck prop_uuChop
-    quickCheck prop_uuCombined
-    quickCheck prop_base85Encode
-    quickCheck prop_base85Chop
-    quickCheck prop_base64Encode
-    quickCheck prop_base64Chop
-    quickCheck prop_base64UrlEncode
-    quickCheck prop_base64UrlChop
-    quickCheck prop_base32Encode
-    quickCheck prop_base32Chop
-    quickCheck prop_base32HexEncode
-    quickCheck prop_base32HexChop
-    quickCheck prop_base16Encode
-    quickCheck prop_base16Chop
-    quickCheck prop_yencEncode
-    quickCheck prop_yencChop
+-- {{{1 all the tests
+allTests =
+    [ testProperty "uuEncode" prop_uuEncode
+    , testProperty "uuChop" prop_uuChop
+    , testProperty "uuCombined" prop_uuCombined
+    , testProperty "base85Encode" prop_base85Encode
+    , testProperty "base85Chop" prop_base85Chop
+    , testProperty "base64Encode" prop_base64Encode
+    , testProperty "base64Chop" prop_base64Chop
+    , testProperty "base64UrlEncode" prop_base64UrlEncode
+    , testProperty "base64UrlChop" prop_base64UrlChop
+    , testProperty "base32Encode" prop_base32Encode
+    , testProperty "base32Chop" prop_base32Chop
+    , testProperty "base32HexEncode" prop_base32HexEncode
+    , testProperty "base32HexChop" prop_base32HexChop
+    , testProperty "base16Encode" prop_base16Encode
+    , testProperty "base16Chop" prop_base16Chop
+    , testProperty "yencEncode" prop_yencEncode
+    , testProperty "yencChop" prop_yencChop
+    ]

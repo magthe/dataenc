@@ -3,13 +3,15 @@
  - License   : BSD3
  -}
 
-module Main
+module DataencUT
     where
 
 import Test.HUnit
 import Control.Monad
 import System.Exit
 import Data.Maybe
+import qualified Test.Framework.Providers.API as TFAPI
+import Test.Framework.Providers.HUnit
 
 import Codec.Binary.DataEncoding
 import qualified Codec.Binary.Yenc as Yenc
@@ -17,10 +19,19 @@ import qualified Codec.Binary.Yenc as Yenc
 -- {{{1 buildTestList
 -- builds a list of successful tests based on a tuple (suite, description,
 -- encoded data, decoded data, codec)
-buildTestList td = TestList $ concat
-    [[ TestLabel (suite ++ " encode " ++ desc) (enc ~=? (encode codec dec))
-     , TestLabel (suite ++ " decode " ++ desc) (dec ~=? (fromJust $ decode codec $ enc))] 
-        | (suite, desc, enc, dec, codec) <- td ]
+buildTestList td = TestList $ concat [
+    [ TestLabel (suite ++ " encode " ++ desc) (enc ~=? (encode codec dec))
+    , TestLabel (suite ++ " decode " ++ desc) (dec ~=? (fromJust $ decode codec $ enc))
+    ] | (suite, desc, enc, dec, codec) <- td ]
+
+-- {{{1 unitTest2TFTest
+unitTest2TFTest :: Test -> [TFAPI.Test]
+unitTest2TFTest t = let
+        unitTest2TFTest' desc (TestCase a) = [testCase desc a]
+        unitTest2TFTest' desc (TestLabel s t) = unitTest2TFTest' (desc ++ ":" ++ s) t
+        unitTest2TFTest' desc (TestList ts) = concat $ map (unitTest2TFTest' desc) ts
+    in unitTest2TFTest' "" t
+
 
 -- {{{1 uuencode tests
 uuTestData =
@@ -168,19 +179,21 @@ yencTests = test
     , "yEnc chop" ~: [[0x3d, 0x40], [0x01, 0x3d, 0x4a]] ~=? Yenc.chop 2 [0x3d, 0x40, 0x01, 0x3d, 0x4a]
     ]
 
--- {{{1 test list and main
-testList = TestList
-    [ uuTests, uuTests2, uuTestsFail
-    , base85Tests, base85TestsFail
-    , base64Tests, base64TestsFail
-    , base64UrlTests
-    , base32Tests, base32TestsFail
-    , base32HexTests, base32HexTestsFail
-    , base16Tests,  base16TestsFail
-    , yencTests
+-- {{{1 all the tests
+allTests = concat
+    [ unitTest2TFTest uuTests
+    , unitTest2TFTest uuTests2
+    , unitTest2TFTest uuTestsFail
+    , unitTest2TFTest base85Tests
+    , unitTest2TFTest base85TestsFail
+    , unitTest2TFTest base64Tests
+    , unitTest2TFTest base64TestsFail
+    , unitTest2TFTest base64UrlTests
+    , unitTest2TFTest base32Tests
+    , unitTest2TFTest base32TestsFail
+    , unitTest2TFTest base32HexTests
+    , unitTest2TFTest base32HexTestsFail
+    , unitTest2TFTest base16Tests
+    , unitTest2TFTest base16TestsFail
+    , unitTest2TFTest yencTests
     ]
-
-main :: IO ()
-main = do
-    counts <- runTestTT testList
-    when ((errors counts, failures counts) /= (0, 0)) $ exitWith (ExitFailure 1)
