@@ -12,6 +12,7 @@ import Test.QuickCheck
 import Test.Framework.Providers.QuickCheck2
 
 import qualified Codec.Binary.Uu as Uu
+import qualified Codec.Binary.Uu as Xx
 import qualified Codec.Binary.Base85 as Base85
 import qualified Codec.Binary.Base64 as Base64
 import qualified Codec.Binary.Base64Url as Base64Url
@@ -37,6 +38,18 @@ prop_uuChop s = properLength s ==> s == (Uu.unchop . Uu.chop 45) s
         properLength s = length s `mod` 4 /= 1 -- property of uuencode guarantees this
 
 prop_uuCombined ws = ws == (fromJust $ Uu.decode $ Uu.unchop $ Uu.chop 45 $ Uu.encode ws)
+    where types = ws::[Word8]
+
+-- {{{1 xxencode properties
+prop_xxEncode ws = ws == (fromJust . Xx.decode . Xx.encode) ws
+    where types = ws::[Word8]
+
+prop_xxChop s = properLength s ==> s == (Xx.unchop . Xx.chop 45) s
+    where
+        types = s::String
+        properLength s = length s `mod` 4 /= 1 -- property of xxencode guarantees this
+
+prop_xxCombined ws = ws == (fromJust $ Xx.decode $ Xx.unchop $ Xx.chop 45 $ Xx.encode ws)
     where types = ws::[Word8]
 
 -- {{{1 base85 properties
@@ -93,6 +106,9 @@ allTests =
     [ testProperty "uuEncode" prop_uuEncode
     , testProperty "uuChop" prop_uuChop
     , testProperty "uuCombined" prop_uuCombined
+    , testProperty "xxEncode" prop_xxEncode
+    , testProperty "xxChop" prop_xxChop
+    , testProperty "xxCombined" prop_xxCombined
     , testProperty "base85Encode" prop_base85Encode
     , testProperty "base85Chop" prop_base85Chop
     , testProperty "base64Encode" prop_base64Encode

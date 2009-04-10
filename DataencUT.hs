@@ -54,6 +54,27 @@ uuTestsFail = test
     , "uu decode' illegal" ~: [Nothing] ~=? decode' uu "aa"
     ]
 
+-- {{{1 xxencode tests
+xxTestData =
+    [ ("xx", "empty", "", [], xx)
+    , ("xx", "\0", "++", [0], xx)
+    , ("xx", "\255", "zk", [255], xx)
+    , ("xx", "Example", "FLVVPL-gNE", [69,120,97,109,112,108,101], xx)
+    ]
+xxTests = buildTestList xxTestData
+
+xxTests2 = test
+    [ "chop . encode Example" ~: ["5FLVVPL-gNE"] ~=? (chop xx 61 . encode xx) [69,120,97,109,112,108,101]
+    , "decode . unchop Example" ~: [69,120,97,109,112,108,101] ~=? fromJust ((decode xx . unchop xx) ["5FLVVPL-gNE"])
+    ]
+
+xxTestsFail = test
+    [ "xx decode short" ~: Nothing ~=? decode xx "A"
+    , "xx decode' short" ~: [Nothing] ~=? decode' xx "A"
+    , "xx decode illegal" ~: Nothing ~=? decode xx "''"
+    , "xx decode' illegal" ~: [Nothing] ~=? decode' xx "''"
+    ]
+
 -- {{{1 base85 tests
 base85TestData =
     [ ("base85", "empty", "", [], base85)
@@ -184,6 +205,9 @@ allTests = concat
     [ unitTest2TFTest uuTests
     , unitTest2TFTest uuTests2
     , unitTest2TFTest uuTestsFail
+    , unitTest2TFTest xxTests
+    , unitTest2TFTest xxTests2
+    , unitTest2TFTest xxTestsFail
     , unitTest2TFTest base85Tests
     , unitTest2TFTest base85TestsFail
     , unitTest2TFTest base64Tests
