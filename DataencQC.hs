@@ -20,6 +20,7 @@ import qualified Codec.Binary.Base32 as Base32
 import qualified Codec.Binary.Base32Hex as Base32Hex
 import qualified Codec.Binary.Base16 as Base16
 import qualified Codec.Binary.Yenc as Yenc
+import qualified Codec.Binary.Hexadecimal as Hex
 
 -- {{{1 Arbitrary instances
 instance Arbitrary Word8 where
@@ -101,6 +102,13 @@ prop_yencEncode ws = ws == (fromJust $ Yenc.decode $ Yenc.encode ws)
 prop_yencChop ws = ws == (Yenc.unchop $ Yenc.chop 6 ws)
     where types = ws :: [Word8]
 
+-- {{{1 hexadecimal
+prop_hexEncode ws = ws == (fromJust $ Hex.decode $ Hex.encode ws)
+    where types = ws :: [Word8]
+
+prop_hexChop s = s == (Hex.unchop $ Hex.chop 6 s)
+    where types = s :: String
+
 -- {{{1 all the tests
 allTests =
     [ testProperty "uuEncode" prop_uuEncode
@@ -123,4 +131,6 @@ allTests =
     , testProperty "base16Chop" prop_base16Chop
     , testProperty "yencEncode" prop_yencEncode
     , testProperty "yencChop" prop_yencChop
+    , testProperty "hexEncode" prop_hexEncode
+    , testProperty "hexChop" prop_hexChop
     ]

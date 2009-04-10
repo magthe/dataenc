@@ -24,6 +24,7 @@ module Codec.Binary.DataEncoding
     , base85
     , uu
     , xx
+    , hex
     )
     where
 
@@ -37,6 +38,7 @@ import qualified Codec.Binary.Base64Url as Base64Url
 import qualified Codec.Binary.Base85 as Base85
 import qualified Codec.Binary.Uu as Uu
 import qualified Codec.Binary.Xx as Xx
+import qualified Codec.Binary.Hexadecimal as Hex
 
 -- {{{1 DataCodec
 -- | Used to group a specific data encoding's functions.
@@ -143,3 +145,14 @@ xx = DataCodec {
     chop=Xx.chop,
     unchop=Xx.unchop
 }
+
+-- {{{1 hexadecimal
+-- | Hexadecimal, see "Codec.Binary.Hexadecimal" for more details on the individual functions.
+hex :: DataCodec
+hex = DataCodec
+    { encode  = Hex.encode
+    , decode  = Hex.decode
+    , decode' = Hex.decode'
+    , chop    = Hex.chop
+    , unchop  = Hex.unchop
+    }
