@@ -47,12 +47,12 @@ encode [b1, b2, b3] = take 4 $ encode [b1, b2, b3, 1]
 encode (0:0:0:0:bs) = "z" ++ encode bs
 encode (b1:b2:b3:b4:bs) = (foldr (\ i s -> (encodeArray ! i) : s) "" group) ++ (encode bs)
     where
-        group2Int :: Int
-        group2Int = foldl (\ a b -> a `shiftL` 8 + (fromIntegral b)) 0 [b1, b2, b3, b4]
-        encodeInt2Ints :: Int -> [Word8]
-        encodeInt2Ints = map fromIntegral . map (`mod` 85) . take 5 . iterate (`div` 85)
+        group2Word32 :: Word32
+        group2Word32 = foldl (\ a b -> a `shiftL` 8 + (fromIntegral b)) 0 [b1, b2, b3, b4]
+        encodeWord32ToWord8s :: Word32 -> [Word8]
+        encodeWord32ToWord8s = map fromIntegral . map (`mod` 85) . take 5 . iterate (`div` 85)
         adjustNReverse = reverse . map (+ 33)
-        group = (adjustNReverse .encodeInt2Ints) group2Int
+        group = (adjustNReverse .encodeWord32ToWord8s) group2Word32
 
 -- {{{1 decode
 -- | Decode data (lazy).
@@ -70,11 +70,11 @@ decode' cs = let
         dec l@[Just c1, Just c2, Just c3, Just c4] = take 3 . dec $ l ++ pad 1
         dec l@[Just c1, Just c2, Just c3, Just c4, Just c5] = let
                 adjRev = map (flip (-) 33) [c5, c4, c3, c2, c1]
-                group2Int :: [Word8] -> Int
-                group2Int = foldl1 (+) . map (uncurry (*)) . zip (map (85 ^) [0..4]) . map fromIntegral
-                int2Group :: Int -> [Maybe Word8]
-                int2Group = map Just . map fromIntegral . reverse . take 4 . iterate (`div` 256)
-            in (int2Group . group2Int) adjRev
+                group2Word32 :: [Word8] -> Word32
+                group2Word32 = foldl1 (+) . map (uncurry (*)) . zip (map (85 ^) [0..4]) . map fromIntegral
+                word32ToGroup :: Word32 -> [Maybe Word8]
+                word32ToGroup = map Just . map fromIntegral . reverse . take 4 . iterate (`div` 256)
+            in (word32ToGroup . group2Word32) adjRev
         dec _ = [Nothing]
     in (dec . map (flip M.lookup decodeMap) $ take 5 cs) ++ decode' (drop 5 cs)
 
