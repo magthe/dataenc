@@ -25,6 +25,7 @@ module Codec.Binary.DataEncoding
     , uu
     , xx
     , hex
+    , qp
     )
     where
 
@@ -39,6 +40,7 @@ import qualified Codec.Binary.Base85 as Base85
 import qualified Codec.Binary.Uu as Uu
 import qualified Codec.Binary.Xx as Xx
 import qualified Codec.Binary.Hexadecimal as Hex
+import qualified Codec.Binary.QuotedPrintable as QP
 
 -- {{{1 DataCodec
 -- | Used to group a specific data encoding's functions.
@@ -147,7 +149,8 @@ xx = DataCodec {
 }
 
 -- {{{1 hexadecimal
--- | Hexadecimal, see "Codec.Binary.Hexadecimal" for more details on the individual functions.
+-- | Hexadecimal, see "Codec.Binary.Hexadecimal" for more details on the
+-- individual functions.
 hex :: DataCodec
 hex = DataCodec
     { encode  = Hex.encode
@@ -155,4 +158,16 @@ hex = DataCodec
     , decode' = Hex.decode'
     , chop    = Hex.chop
     , unchop  = Hex.unchop
+    }
+
+-- {{{1 quoted-printable
+-- | Quoted-printable, see "Codec.Binary.QuotedPrintable" for more details on
+-- the individual functions.
+qp :: DataCodec
+qp = DataCodec
+    { encode  = QP.encode
+    , decode  = QP.decode
+    , decode' = QP.decode'
+    , chop    = QP.chop
+    , unchop  = QP.unchop
     }

@@ -214,6 +214,24 @@ hexTestsFail = test
     , "hex decode' illegal" ~: [Nothing] ~=? decode' hex "H"
     ]
 
+-- {{{1 quoted-printable
+qpTestData =
+    [ ("qp", "empty", "", [], qp)
+    , ("qp", "foo=bar", "foo=3Dbar", [102,111,111,61,98,97,114], qp)
+    ]
+qpTests = buildTestList qpTestData
+
+qpTestsSucc = test
+    [ "qp chop one" ~: ["foo=","=3D=","bar"] ~=? chop qp 4 "foo=3Dbar"
+    ]
+
+qpTestsFail = test
+    [ "qp decode short" ~: Nothing ~=? decode qp "=4"
+    , "qp decode' short" ~: [Nothing] ~=? decode' qp "=4"
+    , "qp decode non-hex" ~: Nothing ~=? decode qp "=G"
+    , "qp decode' non-hex" ~: [Nothing] ~=? decode' qp "=G"
+    ]
+
 -- {{{1 all the tests
 allTests = concat
     [ unitTest2TFTest uuTests
@@ -236,4 +254,7 @@ allTests = concat
     , unitTest2TFTest yencTests
     , unitTest2TFTest hexTests
     , unitTest2TFTest hexTestsFail
+    , unitTest2TFTest qpTests
+    , unitTest2TFTest qpTestsSucc
+    , unitTest2TFTest qpTestsFail
     ]

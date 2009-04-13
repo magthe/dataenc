@@ -21,6 +21,7 @@ import qualified Codec.Binary.Base32Hex as Base32Hex
 import qualified Codec.Binary.Base16 as Base16
 import qualified Codec.Binary.Yenc as Yenc
 import qualified Codec.Binary.Hexadecimal as Hex
+import qualified Codec.Binary.QuotedPrintable as QP
 
 -- {{{1 Arbitrary instances
 instance Arbitrary Word8 where
@@ -109,6 +110,20 @@ prop_hexEncode ws = ws == (fromJust $ Hex.decode $ Hex.encode ws)
 prop_hexChop s = s == (Hex.unchop $ Hex.chop 6 s)
     where types = s :: String
 
+-- {{{1 qp
+prop_qpEncode ws = ws == (fromJust $ QP.decode $ QP.encode ws)
+    where types = ws :: [Word8]
+
+-- TBD: figure out whether special format is required for string when testing
+-- unchop . chop
+prop_qpChop s = properQPString s ==> s == (QP.unchop . QP.chop 6) s
+    where
+        types = s :: String
+        properQPString s = length s == 0 || last s /= '='
+
+prop_qpCombined ws = ws == (fromJust $ QP.decode $ QP.unchop $ QP.chop 6 $ QP.encode ws)
+    where types = ws :: [Word8]
+
 -- {{{1 all the tests
 allTests =
     [ testProperty "uuEncode" prop_uuEncode
@@ -133,4 +148,7 @@ allTests =
     , testProperty "yencChop" prop_yencChop
     , testProperty "hexEncode" prop_hexEncode
     , testProperty "hexChop" prop_hexChop
+    , testProperty "qpEncode" prop_qpEncode
+    , testProperty "qpChop" prop_qpChop
+    , testProperty "qpCombined" prop_qpCombined
     ]
