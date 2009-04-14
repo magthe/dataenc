@@ -1,3 +1,9 @@
+-- |
+-- Module    : Codec.Binary.Util
+-- Copyright : (c) 2009 Magnus Therning
+-- License   : BSD3
+--
+-- Utility functions used in the other module.
 module Codec.Binary.Util
     ( toHex
     , fromHex
@@ -18,12 +24,14 @@ hexEncodeArray = array (0, 16) hexEncMap
 hexDecodeMap :: M.Map Char Word8
 hexDecodeMap = M.fromList [(b, a) | (a, b) <- hexEncMap]
 
+-- {{{1 toHex
 toHex :: Word8 -> String
 toHex o = let
         hn = o `shiftR` 4
         ln = o .&. 0xf
     in [hexEncodeArray ! hn, hexEncodeArray ! ln]
 
+-- {{{1 fromHex
 fromHex :: String -> Maybe Word8
 fromHex = let
         dec [Just hn, Just ln] = let
