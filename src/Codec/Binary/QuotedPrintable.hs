@@ -21,30 +21,13 @@ module Codec.Binary.QuotedPrintable
     , unchop
     ) where
 
-import Data.Array
-import Data.Bits
 import Data.Char
-import Data.List
 import Data.Word
-import qualified Data.Map as M
 
--- {{{1 enc/dec alist
-_encMap = zip [0..] "0123456789ABCDEF"
+import Codec.Binary.Util
 
-encodeArray :: Array Word8 Char
-encodeArray = array (0, 16) _encMap
-
-decodeMap :: M.Map Char Word8
-decodeMap = M.fromList [(snd i, fst i) | i <- _encMap]
-
--- {{{1
+-- {{{1 encode
 -- | Encode data.
-toHex :: Word8 -> String
-toHex o = let
-        hn = o `shiftR` 4
-        ln = o .&. 0xf
-    in [encodeArray ! hn, encodeArray ! ln]
-
 encode :: [Word8]
     -> String
 encode [] = ""
@@ -54,15 +37,7 @@ encode (o:os)
 
 
 -- {{{1 decode
--- | Decode data (lazy).
-fromHex :: String -> Maybe Word8
-fromHex = let
-        dec (Just hn : Just ln : mos) = let
-                o = hn `shiftL` 4 .|. ln
-            in Just o
-        dec _ = Nothing
-    in dec . map ((flip M.lookup decodeMap) . toUpper)
-
+-- -- | Decode data (lazy).
 decode' :: String
     -> [Maybe Word8]
 decode' [] = []
@@ -75,7 +50,7 @@ decode' (c:cs)
 decode :: String -> Maybe [Word8]
 decode = sequence . decode'
 
--- {{{1
+-- {{{1 chop
 -- | Chop up a string in parts.
 chop :: Int     -- ^ length of individual lines
     -> String
@@ -92,7 +67,7 @@ chop n s = let
             | otherwise = _c 0 "" tss (('=' : ts) : acc)
     in map reverse . reverse $ _c 0 "" s []
 
--- {{{1
+-- {{{1 unchop
 -- | Concatenate the list of strings into one long string.
 unchop :: [String] -> String
 unchop [] = ""

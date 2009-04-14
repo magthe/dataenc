@@ -15,49 +15,31 @@ module Codec.Binary.Hexadecimal
     , unchop
     ) where
 
-import Data.Array
-import Data.Bits
-import Data.Char
 import Data.Word
-import qualified Data.Map as M
 
--- {{{1 enc/dec alist
-_encMap = zip [0..] "0123456789ABCDEF"
+import Codec.Binary.Util
 
-encodeArray :: Array Word8 Char
-encodeArray = array (0, 16) _encMap
-
-decodeMap :: M.Map Char Word8
-decodeMap = M.fromList [(snd i, fst i) | i <- _encMap]
-
--- {{{1
+-- {{{1 encode
 -- | Encode data.  Each nibble of the byte is converted into one character in
 -- [0-9A-F].
 encode :: [Word8]
     -> String
 encode [] = ""
-encode (o:os) = let
-        hn = o `shiftR` 4
-        ln = o .&. 0xf
-    in (encodeArray ! hn) : (encodeArray ! ln) : (encode os)
+encode (o:os) = toHex o ++ encode os
 
 -- {{{1 decode
 -- | Decode data (lazy).
 decode' :: String
     -> [Maybe Word8]
-decode' = let
-        dec [] = []
-        dec (Just hn : Just ln : mos) = let
-                o = hn `shiftL` 4 .|. ln
-            in Just o : (dec mos)
-        dec _ = [Nothing]
-    in dec . map ((flip M.lookup decodeMap) . toUpper)
+decode' "" = []
+decode' (hn:ln:cs) = fromHex [hn, ln] : decode' cs
+decode' _ = [Nothing]
 
 -- | Decode data (strict).
 decode :: String -> Maybe [Word8]
 decode = sequence . decode'
 
--- {{{1
+-- {{{1 chop
 -- | Chop up a string in parts.
 chop :: Int     -- ^ length of individual lines
     -> String
@@ -68,7 +50,7 @@ chop n s = let
                 | otherwise = n `div` 2 * 2
     in (take enc_len s) : chop n (drop enc_len s)
 
--- {{{1
+-- {{{1 unchop
 -- | Concatenate the list of strings into one long string.
 unchop :: [String] -> String
 unchop = foldr (++) ""

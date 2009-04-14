@@ -25,12 +25,17 @@ library
         else
                 build-depends: array, base, containers
         exposed-modules:
-                Codec.Binary.DataEncoding
                 Codec.Binary.Base16
-                Codec.Binary.Base32Hex
                 Codec.Binary.Base32
-                Codec.Binary.Uu
-                Codec.Binary.Base64Url
+                Codec.Binary.Base32Hex
                 Codec.Binary.Base64
+                Codec.Binary.Base64Url
                 Codec.Binary.Base85
+                Codec.Binary.DataEncoding
+                Codec.Binary.Hexadecimal
+                Codec.Binary.QuotedPrintable
+                Codec.Binary.Uu
+                Codec.Binary.Xx
                 Codec.Binary.Yenc
+        other-modules:
+                Codec.Binary.Util
