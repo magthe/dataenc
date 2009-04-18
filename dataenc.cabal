@@ -1,5 +1,5 @@
 name: dataenc
-version: 0.12
+version: 0.12.1.0
 license: BSD3
 license-file: LICENSE
 cabal-version: >= 1.2
@@ -14,16 +14,9 @@ description: Data encoding library currently providing Uuencode, Base64,
         Base64Url, Base32, Base32Hex, Base16, Base85, and yEncoding.
 extra-source-files: DataencUT.hs DataencQC.hs Test.hs GNUmakefile
 
-flag large_base
-        description: Choose the old larger, monolithic base package.
-        default: False
-
 library
         hs-source-dirs: src
-        if flag(large_base)
-                build-depends: base
-        else
-                build-depends: array, base, containers
+        build-depends: array >= 0.2.0 && < 0.3, base >= 4.0.0 && < 4.1, containers >= 0.2.0 && < 0.3
         exposed-modules:
                 Codec.Binary.Base16
                 Codec.Binary.Base32
