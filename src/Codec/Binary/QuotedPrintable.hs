@@ -52,12 +52,12 @@ decode = sequence . decode'
 
 -- {{{1 chop
 -- | Chop up a string in parts.
-chop :: Int     -- ^ length of individual lines
+chop :: Int     -- ^ length of individual lines (values below 4 are ignored)
     -> String
     -> [String]
 chop n "" = []
 chop n s = let
-        n' = n - 1
+        n' = max 3 $ n - 1
         _c i ts "" acc = ts : acc
         _c i ts tss@('=':tss') acc
             | i + 2 < n' = _c (i + 1) ('=' : ts) tss' acc

@@ -35,94 +35,94 @@ instance Arbitrary Word8 where
 prop_uuEncode ws = ws == (fromJust . Uu.decode . Uu.encode) ws
     where types = ws::[Word8]
 
-prop_uuChop s = properLength s ==> s == (Uu.unchop . Uu.chop 45) s
+prop_uuChop n ws = s == (Uu.unchop . Uu.chop n) s
     where
-        types = s::String
-        properLength s = length s `mod` 4 /= 1 -- property of uuencode guarantees this
+        types = (n :: Int, ws::[Word8])
+        s = Uu.encode ws
 
-prop_uuCombined ws = ws == (fromJust $ Uu.decode $ Uu.unchop $ Uu.chop 45 $ Uu.encode ws)
-    where types = ws::[Word8]
+prop_uuCombined n ws = ws == (fromJust $ Uu.decode $ Uu.unchop $ Uu.chop n $ Uu.encode ws)
+    where types = (n::Int, ws::[Word8])
 
 -- {{{1 xxencode properties
 prop_xxEncode ws = ws == (fromJust . Xx.decode . Xx.encode) ws
     where types = ws::[Word8]
 
-prop_xxChop s = properLength s ==> s == (Xx.unchop . Xx.chop 45) s
+prop_xxChop n s = properLength s ==> s == (Xx.unchop . Xx.chop n) s
     where
-        types = s::String
-        properLength s = length s `mod` 4 /= 1 -- property of xxencode guarantees this
+        types = (n:: Int, s::String)
+        -- property of xxencode guarantees this and chop relies on it
+        properLength s = length s `mod` 4 /= 1
 
-prop_xxCombined ws = ws == (fromJust $ Xx.decode $ Xx.unchop $ Xx.chop 45 $ Xx.encode ws)
-    where types = ws::[Word8]
+prop_xxCombined n ws = ws == (fromJust $ Xx.decode $ Xx.unchop $ Xx.chop n $ Xx.encode ws)
+    where types = (n::Int, ws::[Word8])
 
 -- {{{1 base85 properties
 prop_base85Encode ws = ws == (fromJust $ Base85.decode $ Base85.encode ws)
     where types = ws::[Word8]
 
-prop_base85Chop s = s == (Base85.unchop $ Base85.chop 20 s)
-    where types = s::String
+prop_base85Chop n s = s == (Base85.unchop $ Base85.chop n s)
+    where types = (n::Int, s::String)
 
 -- {{{1 base64 properties
 prop_base64Encode ws = ws == (fromJust $ Base64.decode $ Base64.encode ws)
     where types = ws::[Word8]
 
-prop_base64Chop s = s == (Base64.unchop $ Base64.chop 4 s)
-    where types = s::String
+prop_base64Chop n s = s == (Base64.unchop $ Base64.chop n s)
+    where types = (n::Int, s::String)
 
 -- {{{1 base64url properties
 prop_base64UrlEncode ws = ws == (fromJust $ Base64Url.decode $ Base64Url.encode ws)
     where types = ws::[Word8]
 
-prop_base64UrlChop s = s == (Base64Url.unchop $ Base64Url.chop 64 s)
-    where types = s::String
+prop_base64UrlChop n s = s == (Base64Url.unchop $ Base64Url.chop n s)
+    where types = (n::Int, s::String)
 
 -- {{{1 base32
 prop_base32Encode ws = ws == (fromJust $ Base32.decode $ Base32.encode ws)
     where types = ws::[Word8]
 
-prop_base32Chop s = s == (Base32.unchop $ Base32.chop 8 s)
-    where types = s::String
+prop_base32Chop n s = s == (Base32.unchop $ Base32.chop n s)
+    where types = (n::Int, s::String)
 
 -- {{{1 base32hex
 prop_base32HexEncode ws = ws == (fromJust $ Base32Hex.decode $ Base32Hex.encode ws)
     where types = ws::[Word8]
 
-prop_base32HexChop s = s == (Base32Hex.unchop $ Base32Hex.chop 64 s)
-    where types = s::String
+prop_base32HexChop n s = s == (Base32Hex.unchop $ Base32Hex.chop n s)
+    where types = (n::Int, s::String)
 
 -- {{{1 base16
 prop_base16Encode ws = ws == (fromJust $ Base16.decode $ Base16.encode ws)
     where types = ws::[Word8]
 
-prop_base16Chop s = s == (Base16.unchop $ Base16.chop 6 s)
-    where types = s::String
+prop_base16Chop n s = s == (Base16.unchop $ Base16.chop n s)
+    where types = (n::Int, s::String)
 
 -- {{{1 yEncoding
 prop_yencEncode ws = ws == (fromJust $ Yenc.decode $ Yenc.encode ws)
     where types = ws ::[Word8]
 
-prop_yencChop ws = ws == (Yenc.unchop $ Yenc.chop 6 ws)
-    where types = ws :: [Word8]
+prop_yencChop n ws = ws == (Yenc.unchop $ Yenc.chop n ws)
+    where types = (n::Int, ws :: [Word8])
 
 -- {{{1 hexadecimal
 prop_hexEncode ws = ws == (fromJust $ Hex.decode $ Hex.encode ws)
     where types = ws :: [Word8]
 
-prop_hexChop s = s == (Hex.unchop $ Hex.chop 6 s)
-    where types = s :: String
+prop_hexChop n s = s == (Hex.unchop $ Hex.chop n s)
+    where types = (n :: Int, s :: String)
 
 -- {{{1 qp
 prop_qpEncode ws = ws == (fromJust $ QP.decode $ QP.encode ws)
     where types = ws :: [Word8]
 
--- TBD: figure out whether special format is required for string when testing
--- unchop . chop
-prop_qpChop s = properQPString s ==> s == (QP.unchop . QP.chop 6) s
+prop_qpChop n ws = s == (QP.unchop . QP.chop n) s
     where
-        types = s :: String
-        properQPString s = length s == 0 || last s /= '='
+        types = (n::Int, ws::[Word8])
+        s = QP.encode ws
 
-prop_qpCombined ws = ws == (fromJust $ QP.decode $ QP.unchop $ QP.chop 6 $ QP.encode ws)
+prop_qpCombined n ws = ws == (fromJust $ QP.decode $ QP.unchop $ QP.chop n $ QP.encode ws)
+    where types = (n::Int, ws::[Word8])
 
 -- {{{1 py
 prop_pyEncode ws = ws == (fromJust $ Py.decode $ Py.encode ws)

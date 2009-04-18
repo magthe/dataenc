@@ -50,11 +50,12 @@ chop :: Int     -- ^ length of individual lines
     -> [[Word8]]
 chop _ [] = []
 chop n ws = let
-        (p1, p2) = splitAt n ws
+        _n = max n 1
+        (p1, p2) = splitAt _n ws
     in
         if (last p1 == _equal)
-            then (p1 ++ (take 1 p2)) : chop n (drop 1 p2)
-            else p1 : chop n p2
+            then (p1 ++ (take 1 p2)) : chop _n (drop 1 p2)
+            else p1 : chop _n p2
 
 -- {{{1 unchop
 -- | Concatenate the strings into one long string.
