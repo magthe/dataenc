@@ -11,21 +11,22 @@
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.DataEncoding
     ( DataCodec
-    , encode
-    , decode
-    , decode'
-    , chop
-    , unchop
     , base16
     , base32
     , base32Hex
     , base64
     , base64Url
     , base85
+    , chop
+    , decode
+    , decode'
+    , encode
+    , hex
+    , py
+    , qp
+    , unchop
     , uu
     , xx
-    , hex
-    , qp
     )
     where
 
@@ -41,6 +42,7 @@ import qualified Codec.Binary.Uu as Uu
 import qualified Codec.Binary.Xx as Xx
 import qualified Codec.Binary.Hexadecimal as Hex
 import qualified Codec.Binary.QuotedPrintable as QP
+import qualified Codec.Binary.PythonString as Py
 
 -- {{{1 DataCodec
 -- | Used to group a specific data encoding's functions.
@@ -170,4 +172,16 @@ qp = DataCodec
     , decode' = QP.decode'
     , chop    = QP.chop
     , unchop  = QP.unchop
+    }
+
+-- {{{1 python string
+-- | Quoted-printable, see "Codec.Binary.PythonString" for more details on
+-- the individual functions.
+py :: DataCodec
+py = DataCodec
+    { encode  = Py.encode
+    , decode  = Py.decode
+    , decode' = Py.decode'
+    , chop    = Py.chop
+    , unchop  = Py.unchop
     }

@@ -22,6 +22,7 @@ import qualified Codec.Binary.Base16 as Base16
 import qualified Codec.Binary.Yenc as Yenc
 import qualified Codec.Binary.Hexadecimal as Hex
 import qualified Codec.Binary.QuotedPrintable as QP
+import qualified Codec.Binary.PythonString as Py
 
 -- {{{1 Arbitrary instances
 instance Arbitrary Word8 where
@@ -122,7 +123,16 @@ prop_qpChop s = properQPString s ==> s == (QP.unchop . QP.chop 6) s
         properQPString s = length s == 0 || last s /= '='
 
 prop_qpCombined ws = ws == (fromJust $ QP.decode $ QP.unchop $ QP.chop 6 $ QP.encode ws)
+
+-- {{{1 py
+prop_pyEncode ws = ws == (fromJust $ Py.decode $ Py.encode ws)
     where types = ws :: [Word8]
+
+prop_pyChop n s = s == (Py.unchop $ Py.chop n s)
+    where types = (n :: Int, s :: String)
+
+prop_pyCombined n ws = ws == (fromJust $ runAll ws)
+    where runAll = Py.decode . Py.unchop . Py.chop n . Py.encode
 
 -- {{{1 all the tests
 allTests =
@@ -151,4 +161,7 @@ allTests =
     , testProperty "qpEncode" prop_qpEncode
     , testProperty "qpChop" prop_qpChop
     , testProperty "qpCombined" prop_qpCombined
+    , testProperty "pyEncode" prop_pyEncode
+    , testProperty "pyChop" prop_pyChop
+    , testProperty "pyCombined" prop_pyCombined
     ]

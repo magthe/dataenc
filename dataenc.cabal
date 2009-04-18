@@ -26,6 +26,7 @@ library
                 Codec.Binary.Base85
                 Codec.Binary.DataEncoding
                 Codec.Binary.Hexadecimal
+                Codec.Binary.PythonString
                 Codec.Binary.QuotedPrintable
                 Codec.Binary.Uu
                 Codec.Binary.Xx

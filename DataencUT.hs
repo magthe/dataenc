@@ -232,6 +232,14 @@ qpTestsFail = test
     , "qp decode' non-hex" ~: [Nothing] ~=? decode' qp "=G"
     ]
 
+-- {{{1 python string
+pyTestData =
+    [ ("py", "empty", "", [], py)
+    , ("py", "<0x00><0x1f><0x20><0x7e><0x7f><0xff>", "\\x00\\x1F ~\\x7F\\xFF", [0x00, 0x1f, 0x20, 0x7e, 0x7f, 0xff], py)
+    , ("py", "\"\'\\", "\\\"\\'\\\\", [34, 39, 92], py)
+    ]
+pyTests = buildTestList pyTestData
+
 -- {{{1 all the tests
 allTests = concat
     [ unitTest2TFTest uuTests
@@ -257,4 +265,5 @@ allTests = concat
     , unitTest2TFTest qpTests
     , unitTest2TFTest qpTestsSucc
     , unitTest2TFTest qpTestsFail
+    , unitTest2TFTest pyTests
     ]
