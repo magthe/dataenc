@@ -81,19 +81,20 @@ decode = sequence . decode'
 --
 --   /Notes:/
 --
---   * The length of the strings in the result will be @(n -1) `div` 4 * 4@.
---   The @-1@ comes from the need to prepend the length.  Keeping it to a
---   multiple of 4 means that strings returned from 'encode' can be chopped
---   without requiring any changes.
+--   * The length of the strings in the result will be @(n -1) `div` 4 * 4 +
+--   1@.  The @-1@ comes from the need to prepend the length (which explains
+--   the final @+1@).  Keeping it to a multiple of 4 means that strings
+--   returned from 'encode' can be chopped without requiring any changes.
 --
 --   * The length of lines in GNU's sharutils is 61.
-chop :: Int     -- ^ length (@4 < n < 65@)
+chop :: Int     -- ^ length (value should be in the range @[5..85]@)
     -> String
     -> [String]
 chop n "" = []
 chop n s = let
-        enc_len | n < 5 = 4
-                | otherwise = min 64 $ (n - 1) `div` 4 * 4
+        enc_len | n < 5     = 4
+                | n >= 85    = 84
+                | otherwise = (n - 1) `div` 4 * 4
         enc_line = take enc_len s
         act_len = fromIntegral $ case (length enc_line `divMod` 4) of
             (l, 0) -> l * 3

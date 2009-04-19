@@ -47,11 +47,10 @@ prop_uuCombined n ws = ws == (fromJust $ Uu.decode $ Uu.unchop $ Uu.chop n $ Uu.
 prop_xxEncode ws = ws == (fromJust . Xx.decode . Xx.encode) ws
     where types = ws::[Word8]
 
-prop_xxChop n s = properLength s ==> s == (Xx.unchop . Xx.chop n) s
+prop_xxChop n ws = s == (Xx.unchop . Xx.chop n) s
     where
-        types = (n:: Int, s::String)
-        -- property of xxencode guarantees this and chop relies on it
-        properLength s = length s `mod` 4 /= 1
+        types = (n:: Int, ws::[Word8])
+        s = Xx.encode ws
 
 prop_xxCombined n ws = ws == (fromJust $ Xx.decode $ Xx.unchop $ Xx.chop n $ Xx.encode ws)
     where types = (n::Int, ws::[Word8])

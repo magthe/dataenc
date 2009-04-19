@@ -52,7 +52,7 @@ decode = sequence . decode'
 
 -- {{{1 chop
 -- | Chop up a string in parts.
-chop :: Int     -- ^ length of individual lines (values below 4 are ignored)
+chop :: Int     -- ^ length of individual lines (values @\< 4@ are ignored)
     -> String
     -> [String]
 chop n "" = []

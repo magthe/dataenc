@@ -36,15 +36,22 @@ unitTest2TFTest t = let
 -- {{{1 uuencode tests
 uuTestData =
     [ ("uu", "empty", "", [], uu)
-    , ("uu", "\0", "``", [0], uu)
-    , ("uu", "\255", "_P", [255], uu)
+    , ("uu", "\\0", "``", [0], uu)
+    , ("uu", "\\255", "_P", [255], uu)
+    , ("uu", "AA", "04$", [65, 65], uu)
+    , ("uu", "AAA", "04%!", [65, 65, 65], uu)
+    , ("uu", "AAAA", "04%!00", [65, 65, 65, 65], uu)
     , ("uu", "Example", "17AA;7!L90", [69,120,97,109,112,108,101], uu)
     ]
 uuTests = buildTestList uuTestData
 
 uuTests2 = test
-    [ "chop . encode Example" ~: ["'17AA;7!L90"] ~=? (chop uu 61 . encode uu) [69,120,97,109,112,108,101]
-    , "decode . unchop Example" ~: [69,120,97,109,112,108,101] ~=? fromJust ((decode uu . unchop uu) ["'17AA;7!L90"])
+    [ "uu unchop.chop" ~: "EI2" ~=? (unchop uu $ chop uu 1 "EI2")
+    , "uu unchop.chop" ~: "EI3-" ~=? (unchop uu $ chop uu 1 "EI3-")
+    , "uu unchop.chop" ~: "EI3-EE" ~=? (unchop uu $ chop uu 1 "EI3-EE")
+    , "uu full circle" ~: [0..255] ~=? fromJust (decode uu $ unchop uu $ chop uu 1 $ encode uu [0..255])
+    , "uu full circle" ~: [0..255] ~=? fromJust (decode uu $ unchop uu $ chop uu 61 $ encode uu [0..255])
+    , "uu full circle" ~: [0..255] ~=? fromJust (decode uu $ unchop uu $ chop uu 100 $ encode uu [0..255])
     ]
 
 uuTestsFail = test
@@ -57,15 +64,22 @@ uuTestsFail = test
 -- {{{1 xxencode tests
 xxTestData =
     [ ("xx", "empty", "", [], xx)
-    , ("xx", "\0", "++", [0], xx)
-    , ("xx", "\255", "zk", [255], xx)
+    , ("xx", "\\0", "++", [0], xx)
+    , ("xx", "\\255", "zk", [255], xx)
+    , ("xx", "AA", "EI2", [65, 65], xx)
+    , ("xx", "AAA", "EI3-", [65, 65, 65], xx)
+    , ("xx", "AAAA", "EI3-EE", [65, 65, 65, 65], xx)
     , ("xx", "Example", "FLVVPL-gNE", [69,120,97,109,112,108,101], xx)
     ]
 xxTests = buildTestList xxTestData
 
 xxTests2 = test
-    [ "chop . encode Example" ~: ["5FLVVPL-gNE"] ~=? (chop xx 61 . encode xx) [69,120,97,109,112,108,101]
-    , "decode . unchop Example" ~: [69,120,97,109,112,108,101] ~=? fromJust ((decode xx . unchop xx) ["5FLVVPL-gNE"])
+    [ "xx unchop.chop" ~: "EI2" ~=? (unchop xx $ chop xx 1 "EI2")
+    , "xx unchop.chop" ~: "EI3-" ~=? (unchop xx $ chop xx 1 "EI3-")
+    , "xx unchop.chop" ~: "EI3-EE" ~=? (unchop xx $ chop xx 1 "EI3-EE")
+    , "xx full circle" ~: [0..255] ~=? fromJust (decode xx $ unchop xx $ chop xx 1 $ encode xx [0..255])
+    , "xx full circle" ~: [0..255] ~=? fromJust (decode xx $ unchop xx $ chop xx 61 $ encode xx [0..255])
+    , "xx full circle" ~: [0..255] ~=? fromJust (decode xx $ unchop xx $ chop xx 100 $ encode xx [0..255])
     ]
 
 xxTestsFail = test
@@ -240,6 +254,11 @@ pyTestData =
     ]
 pyTests = buildTestList pyTestData
 
+pyTestsFail = test
+    [ "py decode bad char after \\" ~: Nothing ~=? decode py "\\z"
+    , "py decode' bad char after \\" ~: [Nothing] ~=? decode' py "\\z"
+    ]
+
 -- {{{1 all the tests
 allTests = concat
     [ unitTest2TFTest uuTests
@@ -266,4 +285,5 @@ allTests = concat
     , unitTest2TFTest qpTestsSucc
     , unitTest2TFTest qpTestsFail
     , unitTest2TFTest pyTests
+    , unitTest2TFTest pyTestsFail
     ]

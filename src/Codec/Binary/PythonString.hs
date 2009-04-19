@@ -8,17 +8,21 @@
 -- This implementation encodes non-printable characters (0x00-0x1f, 0x7f-0xff)
 -- to hex-value characters ('\xhh') while leaving printable characters as such:
 --
--- > encode [0, 10, 13, 110]
--- "\\x00\\x0A\\x0Dn"
--- > putStrLn $ encode [0, 10, 13, 110]
--- \x00\x0A\x0Dn
+-- @
+-- \> encode [0, 10, 13, 110]
+-- \"\\\\x00\\\\x0A\\\\x0Dn\"
+-- \> putStrLn $ encode [0, 10, 13, 110]
+-- \\x00\\x0A\\x0Dn
+-- @
 --
 -- It also properly handles escaping of a few characters that require it:
 --
--- > encode [34, 39, 92]
--- "\\\"\\'\\\\"
--- > putStrLn $ encode [34, 39, 92]
--- \"\'\\
+-- @
+-- \> encode [34, 39, 92]
+-- \"\\\\\\\"\\\\\'\\\\\\\\\"
+-- putStrLn $ encode [34, 39, 92]
+-- \\\"\\'\\\\
+-- @
 --
 -- Further documentation and information can be found at
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
@@ -66,7 +70,7 @@ decode = sequence . decode'
 
 -- {{{1 chop
 -- | Chop up a string in parts.
-chop :: Int     -- ^ length of individual lines (values < 1 are ignored)
+chop :: Int     -- ^ length of individual lines (values @\< 1@ are ignored)
     -> String
     -> [String]
 chop n = let
