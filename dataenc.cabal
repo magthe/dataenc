@@ -28,6 +28,7 @@ library
                 Codec.Binary.Hexadecimal
                 Codec.Binary.PythonString
                 Codec.Binary.QuotedPrintable
+                Codec.Binary.Url
                 Codec.Binary.Uu
                 Codec.Binary.Xx
                 Codec.Binary.Yenc

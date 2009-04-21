@@ -259,6 +259,21 @@ pyTestsFail = test
     , "py decode' bad char after \\" ~: [Nothing] ~=? decode' py "\\z"
     ]
 
+-- {{{1 url encoding
+urlTestData =
+    [ ("url", "empty", "", [], url)
+    , ("url", "aA", "aA", [97, 65], url)
+    , ("url", "~ ", "~%20", [126, 0x20], url)
+    ]
+urlTests = buildTestList urlTestData
+
+urlTestsFail = test
+    [ "url decode bad char after %" ~: Nothing ~=? decode url "%ga"
+    , "url decode' bad char after %" ~: [Nothing] ~=? decode' url "%ga"
+    , "url decode bad char after %" ~: Nothing ~=? decode url "%%"
+    , "url decode' bad char after %" ~: [Nothing] ~=? decode' url "%%"
+    ]
+
 -- {{{1 all the tests
 allTests = concat
     [ unitTest2TFTest uuTests
@@ -286,4 +301,6 @@ allTests = concat
     , unitTest2TFTest qpTestsFail
     , unitTest2TFTest pyTests
     , unitTest2TFTest pyTestsFail
+    , unitTest2TFTest urlTests
+    , unitTest2TFTest urlTestsFail
     ]

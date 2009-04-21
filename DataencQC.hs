@@ -23,6 +23,7 @@ import qualified Codec.Binary.Yenc as Yenc
 import qualified Codec.Binary.Hexadecimal as Hex
 import qualified Codec.Binary.QuotedPrintable as QP
 import qualified Codec.Binary.PythonString as Py
+import qualified Codec.Binary.Url as Url
 
 -- {{{1 Arbitrary instances
 instance Arbitrary Word8 where
@@ -133,6 +134,16 @@ prop_pyChop n s = s == (Py.unchop $ Py.chop n s)
 prop_pyCombined n ws = ws == (fromJust $ runAll ws)
     where runAll = Py.decode . Py.unchop . Py.chop n . Py.encode
 
+-- {{{1 url
+prop_urlEncode ws = ws == (fromJust $ Url.decode $ Url.encode ws)
+    where types = ws :: [Word8]
+
+prop_urlChop n s = s == (Url.unchop $ Url.chop n s)
+    where types = (n :: Int, s :: String)
+
+prop_urlCombined n ws = ws == (fromJust $ runAll ws)
+    where runAll = Url.decode . Url.unchop . Url.chop n . Url.encode
+
 -- {{{1 all the tests
 allTests =
     [ testProperty "uuEncode" prop_uuEncode
@@ -163,4 +174,7 @@ allTests =
     , testProperty "pyEncode" prop_pyEncode
     , testProperty "pyChop" prop_pyChop
     , testProperty "pyCombined" prop_pyCombined
+    , testProperty "urlEncode" prop_urlEncode
+    , testProperty "urlChop" prop_urlChop
+    , testProperty "urlCombined" prop_urlCombined
     ]

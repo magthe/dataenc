@@ -25,6 +25,7 @@ module Codec.Binary.DataEncoding
     , py
     , qp
     , unchop
+    , url
     , uu
     , xx
     )
@@ -38,6 +39,7 @@ import qualified Codec.Binary.Base32Hex as Base32Hex
 import qualified Codec.Binary.Base64 as Base64
 import qualified Codec.Binary.Base64Url as Base64Url
 import qualified Codec.Binary.Base85 as Base85
+import qualified Codec.Binary.Url as Url
 import qualified Codec.Binary.Uu as Uu
 import qualified Codec.Binary.Xx as Xx
 import qualified Codec.Binary.Hexadecimal as Hex
@@ -184,4 +186,16 @@ py = DataCodec
     , decode' = Py.decode'
     , chop    = Py.chop
     , unchop  = Py.unchop
+    }
+
+-- {{{1 url encoding
+-- | URL encoding, see "Codec.Binary.Url" for more details on the individual
+-- functions.
+url :: DataCodec
+url = DataCodec
+    { encode  = Url.encode
+    , decode  = Url.decode
+    , decode' = Url.decode'
+    , chop    = Url.chop
+    , unchop  = Url.unchop
     }
