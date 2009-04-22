@@ -20,7 +20,6 @@ import qualified Codec.Binary.Base32 as Base32
 import qualified Codec.Binary.Base32Hex as Base32Hex
 import qualified Codec.Binary.Base16 as Base16
 import qualified Codec.Binary.Yenc as Yenc
-import qualified Codec.Binary.Hexadecimal as Hex
 import qualified Codec.Binary.QuotedPrintable as QP
 import qualified Codec.Binary.PythonString as Py
 import qualified Codec.Binary.Url as Url
@@ -105,13 +104,6 @@ prop_yencEncode ws = ws == (fromJust $ Yenc.decode $ Yenc.encode ws)
 prop_yencChop n ws = ws == (Yenc.unchop $ Yenc.chop n ws)
     where types = (n::Int, ws :: [Word8])
 
--- {{{1 hexadecimal
-prop_hexEncode ws = ws == (fromJust $ Hex.decode $ Hex.encode ws)
-    where types = ws :: [Word8]
-
-prop_hexChop n s = s == (Hex.unchop $ Hex.chop n s)
-    where types = (n :: Int, s :: String)
-
 -- {{{1 qp
 prop_qpEncode ws = ws == (fromJust $ QP.decode $ QP.encode ws)
     where types = ws :: [Word8]
@@ -166,8 +158,6 @@ allTests =
     , testProperty "base16Chop" prop_base16Chop
     , testProperty "yencEncode" prop_yencEncode
     , testProperty "yencChop" prop_yencChop
-    , testProperty "hexEncode" prop_hexEncode
-    , testProperty "hexChop" prop_hexChop
     , testProperty "qpEncode" prop_qpEncode
     , testProperty "qpChop" prop_qpChop
     , testProperty "qpCombined" prop_qpCombined

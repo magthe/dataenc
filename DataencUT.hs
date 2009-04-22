@@ -214,20 +214,6 @@ yencTests = test
     , "yEnc chop" ~: [[0x3d, 0x40], [0x01, 0x3d, 0x4a]] ~=? Yenc.chop 2 [0x3d, 0x40, 0x01, 0x3d, 0x4a]
     ]
 
--- {{{1 hexadecimal
-hexTestData =
-    [ ("hex", "empty", "", [], hex)
-    , ("hex", "foobar", "666F6F626172", [102,111,111,98,97,114], hex)
-    ]
-hexTests = buildTestList hexTestData
-
-hexTestsFail = test
-    [ "hex decode short" ~: Nothing ~=? decode hex "0"
-    , "hex decode' short" ~: [Nothing] ~=? decode' hex "0"
-    , "hex decode illegal" ~: Nothing ~=? decode hex "H"
-    , "hex decode' illegal" ~: [Nothing] ~=? decode' hex "H"
-    ]
-
 -- {{{1 quoted-printable
 qpTestData =
     [ ("qp", "empty", "", [], qp)
@@ -294,8 +280,6 @@ allTests = concat
     , unitTest2TFTest base16Tests
     , unitTest2TFTest base16TestsFail
     , unitTest2TFTest yencTests
-    , unitTest2TFTest hexTests
-    , unitTest2TFTest hexTestsFail
     , unitTest2TFTest qpTests
     , unitTest2TFTest qpTestsSucc
     , unitTest2TFTest qpTestsFail
