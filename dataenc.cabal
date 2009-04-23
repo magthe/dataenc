@@ -17,7 +17,7 @@ extra-source-files: DataencUT.hs DataencQC.hs Test.hs GNUmakefile
 
 library
         hs-source-dirs: src
-        build-depends: array >= 0.2.0 && < 0.3, base >= 4.0.0 && < 4.1, containers >= 0.2.0 && < 0.3
+        build-depends: array >= 0.2.0 && < 0.3, base >= 4.0.0 && < 4.2, containers >= 0.2.0 && < 0.3
         exposed-modules:
                 Codec.Binary.Base16
                 Codec.Binary.Base32
