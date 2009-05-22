@@ -15,22 +15,39 @@ description: Data encoding library currently providing Base16, Base32,
         Quoted-Printable, URL encoding, uuencode, xxencode, and yEncoding.
 extra-source-files: DataencUT.hs DataencQC.hs Test.hs GNUmakefile
 
+flag BuildTests
+    Description: Build unit and quickcheck tests.
+    Default: False
+
 library
-        hs-source-dirs: src
-        build-depends: array >= 0.2.0 && < 0.3, base >= 4.0.0 && < 4.2, containers >= 0.2.0 && < 0.3
-        exposed-modules:
-                Codec.Binary.Base16
-                Codec.Binary.Base32
-                Codec.Binary.Base32Hex
-                Codec.Binary.Base64
-                Codec.Binary.Base64Url
-                Codec.Binary.Base85
-                Codec.Binary.DataEncoding
-                Codec.Binary.PythonString
-                Codec.Binary.QuotedPrintable
-                Codec.Binary.Url
-                Codec.Binary.Uu
-                Codec.Binary.Xx
-                Codec.Binary.Yenc
-        other-modules:
-                Codec.Binary.Util
+    hs-source-dirs: src
+    build-depends: array >= 0.2.0 && < 0.3, base >= 4.0.0 && < 4.2, containers >= 0.2.0 && < 0.3
+    if flag(BuildTests)
+        ghc-options: -fhpc
+    exposed-modules:
+            Codec.Binary.Base16
+            Codec.Binary.Base32
+            Codec.Binary.Base32Hex
+            Codec.Binary.Base64
+            Codec.Binary.Base64Url
+            Codec.Binary.Base85
+            Codec.Binary.DataEncoding
+            Codec.Binary.PythonString
+            Codec.Binary.QuotedPrintable
+            Codec.Binary.Url
+            Codec.Binary.Uu
+            Codec.Binary.Xx
+            Codec.Binary.Yenc
+    other-modules:
+            Codec.Binary.Util
+
+executable tests
+    if flag(BuildTests)
+        main-is: Test.hs
+        hs-source-dirs: test-src src
+        build-depends: test-framework, test-framework-hunit, HUnit, test-framework-quickcheck2, QuickCheck >= 2.1.0.0
+        if flag(BuildTests)
+            ghc-options: -fhpc
+    else
+        main-is: Test.hs
+        buildable: False

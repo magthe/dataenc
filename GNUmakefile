@@ -1,32 +1,27 @@
 .PHONY: all clean markup report test
 
-TESTS = Test
-ifeq (,$(shell ghc-pkg list dataenc | grep dataenc))
-GHCOPTS = -fhpc -isrc
-else
-GHCOPTS = -fhpc -hide-package dataenc -isrc
-endif
-HPC_SUM_OPTS = --exclude=Main --exclude=DataencUT --exclude=DataencQC
+TESTS = dist/build/tests/tests
 
-% : %.hs
-	ghc --make $(GHCOPTS) $<
+HPC = hpc
+#HPC_SUM_OPTS = --exclude=Main --exclude=DataencUT --exclude=DataencQC
+HPC_SUM_OPTS = 
 
 all: $(TESTS)
 
 test: $(TESTS)
-	./Test
+	for t in $(TESTS); do ./$${t}; done
 
 report : test
-	hpc6 sum $(HPC_SUM_OPTS) --output test.tix Test.tix
-	hpc6 report test.tix
+	$(HPC) sum $(HPC_SUM_OPTS) --output run_test.tix tests.tix
+	$(HPC) report run_test.tix
 
 markup : test
-	hpc6 sum $(HPC_SUM_OPTS) --output test.tix Test.tix
-	hpc6 markup test.tix
+	$(HPC) sum $(HPC_SUM_OPTS) --output run_test.tix tests.tix
+	$(HPC) markup run_test.tix
 
 clean:
-	rm -f *~ Test *.tix *.html *.o *.hi
-	rm -rf .hpc
+	rm -f *~ *.tix *.html *.o *.hi
+	#rm -rf .hpc
 	rm -f src/Codec/Binary/*.o
 	rm -f src/Codec/Binary/*.hi
 	rm -f src/Codec/Binary/*~
