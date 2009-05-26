@@ -1,10 +1,9 @@
-.PHONY: all clean markup report test
+.PHONY: all clean markup report test really-clean
 
 TESTS = dist/build/tests/tests
 
 HPC = hpc
-#HPC_SUM_OPTS = --exclude=Main --exclude=DataencUT --exclude=DataencQC
-HPC_SUM_OPTS = 
+HPC_SUM_OPTS = --exclude=Main --exclude=DataencUT --exclude=DataencQC
 
 all: $(TESTS)
 
@@ -21,7 +20,10 @@ markup : test
 
 clean:
 	rm -f *~ *.tix *.html *.o *.hi
-	#rm -rf .hpc
 	rm -f src/Codec/Binary/*.o
 	rm -f src/Codec/Binary/*.hi
 	rm -f src/Codec/Binary/*~
+
+really-clean: clean
+	rm -rf .hpc
+	./Setup.hs clean
