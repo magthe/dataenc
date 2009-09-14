@@ -20,8 +20,8 @@ import qualified Codec.Binary.Yenc as Yenc
 -- builds a list of successful tests based on a tuple (suite, description,
 -- encoded data, decoded data, codec)
 buildTestList td = TestList $ concat [
-    [ TestLabel (suite ++ " encode " ++ desc) (enc ~=? (encode codec dec))
-    , TestLabel (suite ++ " decode " ++ desc) (dec ~=? (fromJust $ decode codec $ enc))
+    [ TestLabel (suite ++ " encode " ++ desc) (enc ~=? encode codec dec)
+    , TestLabel (suite ++ " decode " ++ desc) (dec ~=? fromJust (decode codec enc))
     ] | (suite, desc, enc, dec, codec) <- td ]
 
 -- {{{1 unitTest2TFTest
@@ -29,7 +29,7 @@ unitTest2TFTest :: Test -> [TFAPI.Test]
 unitTest2TFTest t = let
         unitTest2TFTest' desc (TestCase a) = [testCase desc a]
         unitTest2TFTest' desc (TestLabel s t) = unitTest2TFTest' (desc ++ ":" ++ s) t
-        unitTest2TFTest' desc (TestList ts) = concat $ map (unitTest2TFTest' desc) ts
+        unitTest2TFTest' desc (TestList ts) = concatMap (unitTest2TFTest' desc) ts
     in unitTest2TFTest' "" t
 
 
@@ -46,9 +46,9 @@ uuTestData =
 uuTests = buildTestList uuTestData
 
 uuTests2 = test
-    [ "uu unchop.chop" ~: "EI2" ~=? (unchop uu $ chop uu 1 "EI2")
-    , "uu unchop.chop" ~: "EI3-" ~=? (unchop uu $ chop uu 1 "EI3-")
-    , "uu unchop.chop" ~: "EI3-EE" ~=? (unchop uu $ chop uu 1 "EI3-EE")
+    [ "uu unchop.chop" ~: "EI2" ~=? unchop uu (chop uu 1 "EI2")
+    , "uu unchop.chop" ~: "EI3-" ~=? unchop uu (chop uu 1 "EI3-")
+    , "uu unchop.chop" ~: "EI3-EE" ~=? unchop uu (chop uu 1 "EI3-EE")
     , "uu full circle" ~: [0..255] ~=? fromJust (decode uu $ unchop uu $ chop uu 1 $ encode uu [0..255])
     , "uu full circle" ~: [0..255] ~=? fromJust (decode uu $ unchop uu $ chop uu 61 $ encode uu [0..255])
     , "uu full circle" ~: [0..255] ~=? fromJust (decode uu $ unchop uu $ chop uu 100 $ encode uu [0..255])
@@ -74,9 +74,9 @@ xxTestData =
 xxTests = buildTestList xxTestData
 
 xxTests2 = test
-    [ "xx unchop.chop" ~: "EI2" ~=? (unchop xx $ chop xx 1 "EI2")
-    , "xx unchop.chop" ~: "EI3-" ~=? (unchop xx $ chop xx 1 "EI3-")
-    , "xx unchop.chop" ~: "EI3-EE" ~=? (unchop xx $ chop xx 1 "EI3-EE")
+    [ "xx unchop.chop" ~: "EI2" ~=? unchop xx (chop xx 1 "EI2")
+    , "xx unchop.chop" ~: "EI3-" ~=? unchop xx (chop xx 1 "EI3-")
+    , "xx unchop.chop" ~: "EI3-EE" ~=? unchop xx (chop xx 1 "EI3-EE")
     , "xx full circle" ~: [0..255] ~=? fromJust (decode xx $ unchop xx $ chop xx 1 $ encode xx [0..255])
     , "xx full circle" ~: [0..255] ~=? fromJust (decode xx $ unchop xx $ chop xx 61 $ encode xx [0..255])
     , "xx full circle" ~: [0..255] ~=? fromJust (decode xx $ unchop xx $ chop xx 100 $ encode xx [0..255])

@@ -42,16 +42,16 @@ decodeMap = M.fromList [(snd i, fst i) | i <- _encMap]
 encode :: [Word8]
     -> String
 encode = let
-        pad n = take n $ repeat 0
+        pad n = replicate n 0
         enc [] = ""
         enc l@[o] = take 2 . enc $ l ++ pad 2
         enc l@[o1, o2] = take 3 . enc $ l ++ pad 1
-        enc (o1:o2:o3:os) = let
+        enc (o1 : o2 : o3 : os) = let
                 i1 = o1 `shiftR` 2
                 i2 = (o1 `shiftL` 4 .|. o2 `shiftR` 4) .&. 0x3f
                 i3 = (o2 `shiftL` 2 .|. o3 `shiftR` 6) .&. 0x3f
                 i4 = o3 .&. 0x3f
-            in (foldr (\ i s -> (encodeArray ! i) : s) "" [i1, i2, i3, i4]) ++ enc os
+            in foldr ((:) . (encodeArray !)) "" [i1, i2, i3, i4] ++ enc os
     in enc
 
 -- {{{1 decode
@@ -59,15 +59,15 @@ encode = let
 decode' :: String
     -> [Maybe Word8]
 decode' = let
-        pad n = take n . repeat $ Just 0
+        pad n = replicate n $ Just 0
         dec [] = []
         dec l@[Just eo1, Just eo2] = take 1 . dec $ l ++ pad 2
         dec l@[Just eo1, Just eo2, Just eo3] = take 2 . dec $ l ++ pad 1
-        dec (Just eo1:Just eo2:Just eo3:Just eo4:eos) = let
+        dec (Just eo1 : Just eo2 : Just eo3 : Just eo4 : eos) = let
                 o1 = eo1 `shiftL` 2 .|. eo2 `shiftR` 4
                 o2 = eo2 `shiftL` 4 .|. eo3 `shiftR` 2
                 o3 = eo3 `shiftL` 6 .|. eo4
-            in Just o1:Just o2:Just o3:(dec eos)
+            in Just o1 : Just o2 : Just o3 : dec eos
         dec _ = [Nothing]
     in
         dec . map (flip M.lookup decodeMap)
@@ -109,11 +109,11 @@ chop n s = let
 unchop :: [String]
     -> String
 unchop ss = let
-        singleUnchop (l:cs) = let
+        singleUnchop (l : cs) = let
                 act_len = fromIntegral $ decodeMap M.! l
                 enc_len = case (act_len `divMod` 3) of
                     (n, 0) -> n * 4
                     (n, 1) -> n * 4 + 2
                     (n, 2) -> n * 4 + 3
             in take enc_len cs
-    in foldr (\ s res -> (singleUnchop s) ++ res) "" ss
+    in foldr ((++) . singleUnchop) "" ss

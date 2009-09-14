@@ -31,7 +31,7 @@ import Codec.Binary.Util
 encode :: [Word8]
     -> String
 encode [] = ""
-encode (o:os)
+encode (o : os)
     | o < 33 || o == 61 || o > 126 = ('=' : toHex o) ++ encode os
     | otherwise = chr (fromIntegral o) : encode os
 
@@ -41,8 +41,8 @@ encode (o:os)
 decode' :: String
     -> [Maybe Word8]
 decode' [] = []
-decode' ('=':c0:c1:cs) = fromHex [c0, c1] : decode' cs
-decode' (c:cs)
+decode' ('=' : c0 : c1 : cs) = fromHex [c0, c1] : decode' cs
+decode' (c : cs)
     | c /= '=' = (Just $ fromIntegral $ ord c) : decode' cs
     | otherwise = [Nothing]
 
@@ -59,10 +59,10 @@ chop n "" = []
 chop n s = let
         n' = max 3 $ n - 1
         _c i ts "" acc = ts : acc
-        _c i ts tss@('=':tss') acc
+        _c i ts tss@('=' : tss') acc
             | i + 2 < n' = _c (i + 1) ('=' : ts) tss' acc
             | otherwise = _c 0 "" tss (('=' : ts) : acc)
-        _c i ts tss@(c:tss') acc
+        _c i ts tss@(c : tss') acc
             | i < n' = _c (i + 1) (c : ts) tss' acc
             | otherwise = _c 0 "" tss (('=' : ts) : acc)
     in map reverse . reverse $ _c 0 "" s []
@@ -71,9 +71,9 @@ chop n s = let
 -- | Concatenate the list of strings into one long string.
 unchop :: [String] -> String
 unchop [] = ""
-unchop (s:ss) = let
+unchop (s : ss) = let
         dropLast = last s == '='
         len = length s
     in if dropLast
-        then (take (len - 1) s) ++ (unchop ss)
-        else s ++ (unchop ss)
+        then take (len - 1) s ++ unchop ss
+        else s ++ unchop ss

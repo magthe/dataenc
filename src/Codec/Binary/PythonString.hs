@@ -44,7 +44,7 @@ import Codec.Binary.Util
 encode :: [Word8]
     -> String
 encode [] = ""
-encode (o:os)
+encode (o : os)
     | o < 0x20 || o > 0x7e = ('\\' : 'x' : toHex o) ++ encode os
     | o == 34 = "\\\"" ++ encode os
     | o == 39 = "\\'" ++ encode os
@@ -56,11 +56,11 @@ encode (o:os)
 decode' :: String
     -> [Maybe Word8]
 decode' [] = []
-decode' ('\\':'x':c0:c1:cs) = fromHex [c0, c1] : decode' cs
-decode' ('\\':'\\':cs) = (Just $ fromIntegral $ ord '\\') : decode' cs
-decode' ('\\':'\'':cs) = (Just $ fromIntegral $ ord '\'') : decode' cs
-decode' ('\\':'\"':cs) = (Just $ fromIntegral $ ord '\"') : decode' cs
-decode' (c:cs)
+decode' ('\\':'x' : c0 : c1 : cs) = fromHex [c0, c1] : decode' cs
+decode' ('\\':'\\' : cs) = (Just $ fromIntegral $ ord '\\') : decode' cs
+decode' ('\\':'\'' : cs) = (Just $ fromIntegral $ ord '\'') : decode' cs
+decode' ('\\':'\"' : cs) = (Just $ fromIntegral $ ord '\"') : decode' cs
+decode' (c : cs)
     | c /= '\\' = (Just $ fromIntegral $ ord c) : decode' cs
     | otherwise = [Nothing]
 
@@ -76,7 +76,7 @@ chop :: Int     -- ^ length of individual lines (values @\< 1@ are ignored)
 chop n = let
         _n = max 1 n
         _chop [] = []
-        _chop cs = take _n cs : (_chop $ drop _n cs)
+        _chop cs = take _n cs : _chop (drop _n cs)
     in _chop
 
 -- {{{1 unchop

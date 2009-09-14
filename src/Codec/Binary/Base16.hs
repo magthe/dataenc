@@ -43,7 +43,7 @@ encode :: [Word8]
     -> String
 encode os = let
         splitOctet o = [ o `shiftR` 4, o .&. 0xf ]
-    in map (encodeArray !) $ foldr (\ o l -> (splitOctet o) ++ l) [] os
+    in map (encodeArray !) $ foldr ((++) . splitOctet) [] os
 
 -- {{{1 decode
 -- | Decode data (lazy).
@@ -51,7 +51,7 @@ decode' :: String
     -> [Maybe Word8]
 decode' = let
         dec [] = []
-        dec (Just o1:Just o2:os) =
+        dec (Just o1 : Just o2 : os) =
                     Just (o1 `shiftL` 4 .|. o2) : dec os
         dec _ = [Nothing]
     in
@@ -73,7 +73,7 @@ chop n "" = []
 chop n s = let
         enc_len | n < 2 = 2
                 | otherwise = n `div` 2 * 2
-    in (take enc_len s) : chop n (drop enc_len s)
+    in take enc_len s : chop n (drop enc_len s)
 
 -- {{{1 unchop
 -- | Concatenate the strings into one long string.

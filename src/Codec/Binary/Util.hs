@@ -38,4 +38,4 @@ fromHex = let
                 o = hn `shiftL` 4 .|. ln
             in Just o
         dec _ = Nothing
-    in dec . map ((flip M.lookup hexDecodeMap) . toUpper)
+    in dec . map (flip M.lookup hexDecodeMap . toUpper)
