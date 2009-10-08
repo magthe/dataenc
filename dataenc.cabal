@@ -13,7 +13,7 @@ synopsis: Data encoding library
 description: Data encoding library currently providing Base16, Base32,
         Base32Hex, Base64, Base64Url, Base85, Python string escaping,
         Quoted-Printable, URL encoding, uuencode, xxencode, and yEncoding.
-extra-source-files: DataencUT.hs DataencQC.hs Test.hs GNUmakefile
+extra-source-files: test-src/DataencUT.hs test-src/DataencQC.hs test-src/Test.hs GNUmakefile
 
 flag BuildTests
     Description: Build unit and quickcheck tests.
@@ -22,8 +22,6 @@ flag BuildTests
 library
     hs-source-dirs: src
     build-depends: array >= 0.1.0 && < 0.3, base >= 3.0.0 && < 4.2, containers >= 0.1.0 && < 0.3
-    if flag(BuildTests)
-        ghc-options: -fhpc
     exposed-modules:
             Codec.Binary.Base16
             Codec.Binary.Base32
@@ -42,12 +40,10 @@ library
             Codec.Binary.Util
 
 executable tests
+    main-is: Test.hs
+    hs-source-dirs: test-src src
+    ghc-options: -fhpc
     if flag(BuildTests)
-        main-is: Test.hs
-        hs-source-dirs: test-src src
         build-depends: test-framework, test-framework-hunit, HUnit, test-framework-quickcheck2, QuickCheck >= 2.1.0.0
-        if flag(BuildTests)
-            ghc-options: -fhpc
     else
-        main-is: Test.hs
         buildable: False

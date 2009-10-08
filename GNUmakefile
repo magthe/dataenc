@@ -1,3 +1,5 @@
+# Simple makefile for _running_ tests, use Cabal to build.
+
 .PHONY: all clean markup report test really-clean
 
 TESTS = dist/build/tests/tests
@@ -5,7 +7,8 @@ TESTS = dist/build/tests/tests
 HPC = hpc
 HPC_SUM_OPTS = --exclude=Main --exclude=DataencUT --exclude=DataencQC
 
-all: $(TESTS)
+all:
+	@echo "Use Cabal to build, this is only used to run tests!"
 
 test: $(TESTS)
 	for t in $(TESTS); do ./$${t}; done
