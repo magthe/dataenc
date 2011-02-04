@@ -9,8 +9,10 @@
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Base85
     ( encode
+    , DecIncData(..)
+    , DecIncRes(..)
+    , decodeInc
     , decode
-    , decode'
     , chop
     , unchop
     ) where
@@ -45,6 +47,7 @@ encode [b1] = take 2 $ encode [b1, 0, 0, 1]
 encode [b1, b2] = take 3 $ encode [b1, b2, 0, 1]
 encode [b1, b2, b3] = take 4 $ encode [b1, b2, b3, 1]
 encode (0 : 0 : 0 : 0 : bs) = 'z' : encode bs
+encode (20 : 20 : 20 : 20 : bs) = 'y' : encode bs
 encode (b1 : b2 : b3 : b4 : bs) = foldr ((:) . (encodeArray !)) "" group ++ encode bs
     where
         group2Word32 :: Word32
@@ -55,35 +58,61 @@ encode (b1 : b2 : b3 : b4 : bs) = foldr ((:) . (encodeArray !)) "" group ++ enco
         group = (adjustNReverse .encodeWord32ToWord8s) group2Word32
 
 -- {{{1 decode
--- | Decode data (lazy).
---
---   The input must not be enclosed in \<~ ~\>.
-decode' :: String
-    -> [Maybe Word8]
-decode' [] = []
-decode' ('z' : cs) = Just 0 : Just 0 : Just 0 : Just 0 : decode' cs
-decode' cs = let
-        pad n = replicate n $ Just 0
-        dec :: [Maybe Word8] -> [Maybe Word8]
-        dec l@[Just c1, Just c2] = take 1 . dec $ l ++ pad 3
-        dec l@[Just c1, Just c2, Just c3] = take 2 . dec $ l ++ pad 2
-        dec l@[Just c1, Just c2, Just c3, Just c4] = take 3 . dec $ l ++ pad 1
-        dec l@[Just c1, Just c2, Just c3, Just c4, Just c5] = let
-                adjRev = map (flip (-) 33) [c5, c4, c3, c2, c1]
-                group2Word32 :: [Word8] -> Word32
+data DecIncData = Chunk String | Done
+data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] String | Fail [Word8] String
+
+decodeInc :: DecIncData -> DecIncRes
+decodeInc d = dI [] d
+    where
+        dec5 cs = let
+                ds = map (flip M.lookup decodeMap) cs
+                es@[e1, e2, e3, e4, e5] = map fromJust ds
+                adjRev = map (\ i -> i - 33) [e5, e4, e3, e2, e1]
                 group2Word32 = foldl1 (+) . zipWith (*) (map (85 ^) [0..4]) . map fromIntegral
-                word32ToGroup :: Word32 -> [Maybe Word8]
-                word32ToGroup = map (Just . fromIntegral) . reverse . take 4 . iterate (`div` 256)
-            in (word32ToGroup . group2Word32) adjRev
-        dec _ = [Nothing]
-    in (dec . map (flip M.lookup decodeMap) $ take 5 cs) ++ decode' (drop 5 cs)
+                word32ToGroup :: Word32 -> [Word8]
+                word32ToGroup = map fromIntegral . reverse . take 4 . iterate (`div` 256)
+                allJust = and . map isJust
+            in if allJust ds
+                then Just $ word32ToGroup $ group2Word32 adjRev
+                else Nothing
+
+        dI lo (Chunk s) = doDec [] (lo ++ s)
+        dI [] Done = Final [] []
+        dI cs@[c1, c2] Done = case doDec [] (cs ++ "uuu") of
+                (Part r _) -> Final (take 1 r) []
+                f -> f
+        dI cs@[c1, c2, c3] Done = case doDec [] (cs ++ "uu") of
+                (Part r _) -> Final (take 2 r) []
+                f -> f
+        dI cs@[c1, c2, c3, c4] Done = case doDec [] (cs ++ "u") of
+                (Part r _) -> Final (take 3 r) []
+                f -> f
+        dI lo Done = Fail [] lo
+
+        doDec acc ('z':cs) = doDec (acc ++ [0, 0, 0, 0]) cs
+        doDec acc ('y':cs) = doDec (acc ++ [20, 20, 20, 20]) cs
+        doDec acc s@(c1:c2:c3:c4:c5:cs) = maybe
+            (Fail acc s)
+            (\ bs -> doDec (acc ++ bs) cs)
+            (dec5 [c1, c2, c3, c4, c5])
+        doDec acc cs = Part acc (dI cs)
 
 -- | Decode data (strict).
 --
 --   The input must not be enclosed in \<~ ~\>.
 decode :: String
     -> Maybe [Word8]
-decode = sequence . decode'
+decode s = let
+        d = decodeInc (Chunk s)
+    in case d of
+        Final da _ -> Just da
+        Fail _ _ -> Nothing
+        Part da f -> let
+                d' = f Done
+            in case d' of
+                Final da' _ -> Just $ da ++ da'
+                Fail _ _ -> Nothing
+                Part _ _ -> Nothing -- should never happen
 
 -- {{{1 chop
 -- | Chop up a string in parts.

@@ -83,12 +83,16 @@ base85TestData =
     , ("base85", "\0", "!!", [0], base85)
     , ("base85", "foob\0\0\0\0ar", "AoDTszEW", [102,111,111,98,0,0,0,0,114], base85)
     , ("base85", "Example", "7<i6XE,9(", [69,120,97,109,112,108,101], base85)
+    , ("base85", "zeros", "z", [0, 0, 0, 0], base85)
+    , ("base85", "spaces", "y", [20, 20, 20, 20], base85)
     ]
 case_base85Tests = mapM_ checkAssertions base85TestData
 
 case_base85TestsFail = do
     Nothing @=? decode base85 "A"
     Nothing @=? decode base85 "!z"
+    Nothing @=? decode base85 "!z!"
+    Nothing @=? decode base85 "!z!z"
 
 -- {{{1 base64 tests
 base64TestData =
