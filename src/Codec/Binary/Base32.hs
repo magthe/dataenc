@@ -10,8 +10,10 @@
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Base32
     ( encode
+    , DecIncData(..)
+    , DecIncRes(..)
+    , decodeInc
     , decode
-    , decode'
     , chop
     , unchop
     ) where
@@ -65,31 +67,65 @@ encode = let
     in enc
 
 -- {{{1 decode
--- | Decode data (lazy).
-decode' :: String
-    -> [Maybe Word8]
-decode' = let
-        pad n = replicate n $ Just 0
-        dec [] = []
-        dec l@[Just eo1, Just eo2] = take 1 . dec $ l ++ pad 6
-        dec l@[Just eo1, Just eo2, Just eo3, Just eo4] = take 2 . dec $ l ++ pad 4
-        dec l@[Just eo1, Just eo2, Just eo3, Just eo4, Just eo5] = take 3 . dec $ l ++ pad 3
-        dec l@[Just eo1, Just eo2, Just eo3, Just eo4, Just eo5, Just eo6, Just eo7] = take 4 . dec $ l ++ pad 1
-        dec (Just eo1 : Just eo2 : Just eo3 : Just eo4 : Just eo5 : Just eo6 : Just eo7 : Just eo8 : eos) = let
-                o1 = eo1 `shiftL` 3 .|. eo2 `shiftR` 2
-                o2 = eo2 `shiftL` 6 .|. eo3 `shiftL` 1 .|. eo4 `shiftR` 4
-                o3 = eo4 `shiftL` 4 .|. eo5 `shiftR` 1
-                o4 = eo5 `shiftL` 7 .|. eo6 `shiftL` 2 .|. eo7 `shiftR` 3
-                o5 = eo7 `shiftL` 5 .|. eo8
-            in Just o1 : Just o2 : Just o3 : Just o4 : Just o5 : dec eos
-        dec _ = [Nothing]
-    in
-        dec . map (flip M.lookup decodeMap) . takeWhile (/= '=')
+data DecIncData = Chunk String | Done
+data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] String | Fail [Word8] String
+
+decodeInc :: DecIncData -> DecIncRes
+decodeInc d = dI [] d
+    where
+        dec8 cs = let
+                ds = map (flip M.lookup decodeMap) cs
+                es@[e1, e2, e3, e4, e5, e6, e7, e8] = map fromJust ds
+                o1 = e1 `shiftL` 3 .|. e2 `shiftR` 2
+                o2 = e2 `shiftL` 6 .|. e3 `shiftL` 1 .|. e4 `shiftR` 4
+                o3 = e4 `shiftL` 4 .|. e5 `shiftR` 1
+                o4 = e5 `shiftL` 7 .|. e6 `shiftL` 2 .|. e7 `shiftR` 3
+                o5 = e7 `shiftL` 5 .|. e8
+                allJust = and . map isJust
+            in if allJust ds
+                then Just [o1, o2, o3, o4, o5]
+                else Nothing
+
+        dI [] Done = Final [] []
+        dI lo Done = Fail [] lo
+        dI lo (Chunk s) = doDec [] (lo ++ s)
+            where
+                doDec acc s@(c1:c2:'=':'=':'=':'=':'=':'=':cs) = maybe
+                    (Fail acc s)
+                    (\ bs -> Final (acc ++ take 1 bs) cs)
+                    (dec8 [c1, c2, 'A', 'A', 'A', 'A', 'A', 'A'])
+                doDec acc s@(c1:c2:c3:c4:'=':'=':'=':'=':cs) = maybe
+                    (Fail acc s)
+                    (\ bs -> Final (acc ++ take 2 bs) cs)
+                    (dec8 [c1, c2, c3, c4, 'A', 'A', 'A', 'A'])
+                doDec acc s@(c1:c2:c3:c4:c5:'=':'=':'=':cs) = maybe
+                    (Fail acc s)
+                    (\ bs -> Final (acc ++ take 3 bs) cs)
+                    (dec8 [c1, c2, c3, c4, c5, 'A', 'A', 'A'])
+                doDec acc s@(c1:c2:c3:c4:c5:c6:c7:'=':cs) = maybe
+                    (Fail acc s)
+                    (\ bs -> Final (acc ++ take 4 bs) cs)
+                    (dec8 [c1, c2, c3, c4, c5, c6, c7, 'A'])
+                doDec acc s@(c1:c2:c3:c4:c5:c6:c7:c8:cs) = maybe
+                    (Fail acc s)
+                    (\ bs -> doDec (acc ++ bs) cs)
+                    (dec8 [c1, c2, c3, c4, c5, c6, c7, c8])
+                doDec acc s = Part acc (dI s)
 
 -- | Decode data (strict).
 decode :: String
     -> Maybe [Word8]
-decode = sequence . decode'
+decode s = let
+        d = decodeInc (Chunk s)
+    in case d of
+        Final da _ -> Just da
+        Fail _ _ -> Nothing
+        Part da f -> let
+                d' = f Done
+            in case d' of
+                Final da' _ -> Just $ da ++ da'
+                Fail _ _ -> Nothing
+                Part _ _ -> Nothing -- should never happen
 
 -- {{{1 chop
 -- | Chop up a string in parts.
