@@ -9,8 +9,10 @@
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Base16
     ( encode
+    , DecIncData(..)
+    , DecIncRes(..)
+    , decodeInc
     , decode
-    , decode'
     , chop
     , unchop
     ) where
@@ -46,21 +48,45 @@ encode os = let
     in map (encodeArray !) $ foldr ((++) . splitOctet) [] os
 
 -- {{{1 decode
--- | Decode data (lazy).
-decode' :: String
-    -> [Maybe Word8]
-decode' = let
-        dec [] = []
-        dec (Just o1 : Just o2 : os) =
-                    Just (o1 `shiftL` 4 .|. o2) : dec os
-        dec _ = [Nothing]
-    in
-        dec . map (flip M.lookup decodeMap)
+data DecIncData = Chunk String | Done
+data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] String | Fail [Word8] String
+
+decodeInc :: DecIncData -> DecIncRes
+decodeInc d = dI [] d
+    where
+        dec2 cs = let
+                ds = map (flip M.lookup decodeMap) cs
+                es@[e1, e2] = map fromJust ds
+                o = e1 `shiftL` 4 .|. e2
+                allJust = and . map isJust
+            in if allJust ds
+                then Just o
+                else Nothing
+
+        dI [] Done = Final [] []
+        dI lo Done = Fail [] lo
+        dI lo (Chunk s) = doDec [] (lo ++ s)
+            where
+                doDec acc s'@(c1:c2:cs) = maybe
+                    (Fail acc s')
+                    (\ b -> doDec (acc ++ [b]) cs)
+                    (dec2 [c1, c2])
+                doDec acc s = Part acc (dI s)
 
 -- | Decode data (strict).
 decode :: String
     -> Maybe [Word8]
-decode = sequence . decode'
+decode s = let
+        d = decodeInc (Chunk s)
+    in case d of
+        Final da _ -> Just da
+        Fail _ _ -> Nothing
+        Part da f -> let
+                d' = f Done
+            in case d' of
+                Final da' _ -> Just $ da ++ da'
+                Fail _ _ -> Nothing
+                Part _ _ -> Nothing -- should never happen
 
 -- {{{1 chop
 -- | Chop up a string in parts.
