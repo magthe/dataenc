@@ -44,6 +44,8 @@ executable tests
     hs-source-dirs: test-src src
     ghc-options: -fhpc
     if flag(BuildTests)
-        build-depends: test-framework, test-framework-hunit, HUnit, test-framework-quickcheck2, QuickCheck >= 2.1.0.0
+        build-depends: test-framework, test-framework-hunit, HUnit,
+            test-framework-quickcheck2, QuickCheck >= 2.1.0.0,
+            test-framework-th
     else
         buildable: False

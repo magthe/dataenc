@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -XTemplateHaskell #-}
+
 {-
  - Copyright : (c) 2007 Magnus Therning
  - License   : BSD3
@@ -5,6 +7,8 @@
 
 module DataencQC
     where
+
+import Test.Framework.TH
 
 import Data.Maybe
 import Data.Word
@@ -137,34 +141,4 @@ prop_urlCombined n ws = ws == fromJust (runAll ws)
     where runAll = Url.decode . Url.unchop . Url.chop n . Url.encode
 
 -- {{{1 all the tests
-allTests =
-    [ testProperty "uuEncode" prop_uuEncode
-    , testProperty "uuChop" prop_uuChop
-    , testProperty "uuCombined" prop_uuCombined
-    , testProperty "xxEncode" prop_xxEncode
-    , testProperty "xxChop" prop_xxChop
-    , testProperty "xxCombined" prop_xxCombined
-    , testProperty "base85Encode" prop_base85Encode
-    , testProperty "base85Chop" prop_base85Chop
-    , testProperty "base64Encode" prop_base64Encode
-    , testProperty "base64Chop" prop_base64Chop
-    , testProperty "base64UrlEncode" prop_base64UrlEncode
-    , testProperty "base64UrlChop" prop_base64UrlChop
-    , testProperty "base32Encode" prop_base32Encode
-    , testProperty "base32Chop" prop_base32Chop
-    , testProperty "base32HexEncode" prop_base32HexEncode
-    , testProperty "base32HexChop" prop_base32HexChop
-    , testProperty "base16Encode" prop_base16Encode
-    , testProperty "base16Chop" prop_base16Chop
-    , testProperty "yencEncode" prop_yencEncode
-    , testProperty "yencChop" prop_yencChop
-    , testProperty "qpEncode" prop_qpEncode
-    , testProperty "qpChop" prop_qpChop
-    , testProperty "qpCombined" prop_qpCombined
-    , testProperty "pyEncode" prop_pyEncode
-    , testProperty "pyChop" prop_pyChop
-    , testProperty "pyCombined" prop_pyCombined
-    , testProperty "urlEncode" prop_urlEncode
-    , testProperty "urlChop" prop_urlChop
-    , testProperty "urlCombined" prop_urlCombined
-    ]
+allTests = $(testGroupGenerator)

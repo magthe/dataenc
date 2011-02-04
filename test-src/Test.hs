@@ -11,9 +11,6 @@ import Test.Framework
 import qualified DataencQC as DQC
 import qualified DataencUT as DUT
 
-tests =
-    [ testGroup "quickcheck" DQC.allTests
-    , testGroup "unit test" DUT.allTests
-    ]
+tests = [ DQC.allTests , DUT.allTests ]
 
 main = defaultMain tests
