@@ -9,7 +9,10 @@
 -- Further documentation and information can be found at
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Base32
-    ( encode
+    ( EncIncData(..)
+    , EncIncRes(..)
+    , encodeInc
+    , encode
     , DecIncData(..)
     , DecIncRes(..)
     , decodeInc
@@ -46,17 +49,13 @@ decodeMap :: M.Map Char Word8
 decodeMap = M.fromList [(snd i, fst i) | i <- _encMap]
 
 -- {{{1 encode
--- | Encode data.
-encode :: [Word8]
-    -> String
-encode = let
-        pad n = replicate n 0
-        enc [] = ""
-        enc l@[o] = (++ "======") . take 2 . enc $ l ++ pad 4
-        enc l@[o1, o2] = (++ "====") . take 4 . enc $ l ++ pad 3
-        enc l@[o1, o2, o3] = (++ "===") . take 5 . enc $ l ++ pad 2
-        enc l@[o1, o2, o3, o4] = (++ "=") . take 7 . enc $ l ++ pad 1
-        enc (o1 : o2 : o3 : o4 : o5 : os) = let
+data EncIncData = EChunk [Word8] | EDone
+data EncIncRes = EPart String (EncIncData -> EncIncRes) | EFinal String
+
+encodeInc e = eI [] e
+    where
+        enc5 [o1, o2, o3, o4, o5] = map (encodeArray !) [i1, i2, i3, i4, i5, i6, i7, i8]
+            where
                 i1 = o1 `shiftR` 3
                 i2 = (o1 `shiftL` 2 .|. o2 `shiftR` 6) .&. 0x1f
                 i3 = o2 `shiftR` 1 .&. 0x1f
@@ -65,8 +64,31 @@ encode = let
                 i6 = o4 `shiftR` 2 .&. 0x1f
                 i7 = (o4 `shiftL` 3 .|. o5 `shiftR` 5) .&. 0x1f
                 i8 = o5 .&. 0x1f
-            in foldr ((:) . (encodeArray !)) "" [i1, i2, i3, i4, i5, i6, i7, i8] ++ enc os
-    in enc
+
+        eI [] EDone = EFinal []
+        eI [o1] EDone = EFinal (take 2 cs ++ "======")
+            where
+                cs = enc5 [o1, 0, 0, 0, 0]
+        eI [o1, o2] EDone = EFinal (take 4 cs ++ "====")
+            where
+                cs = enc5 [o1, o2, 0, 0, 0]
+        eI [o1, o2, o3] EDone = EFinal (take 5 cs ++ "===")
+            where
+                cs = enc5 [o1, o2, o3, 0, 0]
+        eI [o1, o2, o3, o4] EDone = EFinal (take 7 cs ++ "=")
+            where
+                cs = enc5 [o1, o2, o3, o4, 0]
+        eI lo (EChunk bs) = doEnc [] (lo ++ bs)
+            where
+                doEnc acc (o1:o2:o3:o4:o5:os) = doEnc (acc ++ enc5 [o1, o2, o3, o4, o5]) os
+                doEnc acc os = EPart acc (eI os)
+
+-- | Encode data.
+encode :: [Word8]
+    -> String
+encode bs = case encodeInc (EChunk bs) of
+    EPart r1 f -> case f EDone of
+        EFinal r2 -> r1 ++ r2
 
 -- {{{1 decode
 decodeInc :: DecIncData String -> DecIncRes String
