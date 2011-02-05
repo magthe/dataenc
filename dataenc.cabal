@@ -42,7 +42,7 @@ library
 executable tests
     main-is: Test.hs
     hs-source-dirs: test-src src
-    ghc-options: -fhpc
+    -- ghc-options: -fhpc
     if flag(BuildTests)
         build-depends: test-framework, test-framework-hunit, HUnit,
             test-framework-quickcheck2, QuickCheck ==2.1.*,
