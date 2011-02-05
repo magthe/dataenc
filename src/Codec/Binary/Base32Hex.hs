@@ -71,7 +71,7 @@ encode = let
     in enc
 
 -- {{{1 decode
-decodeInc :: DecIncData -> DecIncRes
+decodeInc :: DecIncData String -> DecIncRes String
 decodeInc d = dI [] d
     where
         dec8 cs = let

@@ -50,7 +50,7 @@ encode os = let
     in map (encodeArray !) $ foldr ((++) . splitOctet) [] os
 
 -- {{{1 decode
-decodeInc :: DecIncData -> DecIncRes
+decodeInc :: DecIncData String -> DecIncRes String
 decodeInc d = dI [] d
     where
         dec2 cs = let

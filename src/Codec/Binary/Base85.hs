@@ -60,7 +60,7 @@ encode (b1 : b2 : b3 : b4 : bs) = foldr ((:) . (encodeArray !)) "" group ++ enco
         group = (adjustNReverse .encodeWord32ToWord8s) group2Word32
 
 -- {{{1 decode
-decodeInc :: DecIncData -> DecIncRes
+decodeInc :: DecIncData String -> DecIncRes String
 decodeInc d = dI [] d
     where
         dec5 cs = let

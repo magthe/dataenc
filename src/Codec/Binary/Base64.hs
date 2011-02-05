@@ -70,8 +70,8 @@ encode = let
 
 -- {{{1 decode
 -- | Decode data incrementally by passing chunks.
-decodeInc :: DecIncData
-    -> DecIncRes
+decodeInc :: DecIncData String
+    -> DecIncRes String
 decodeInc d = dI [] d
     where
         dec4 cs = let

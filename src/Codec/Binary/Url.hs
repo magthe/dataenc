@@ -47,7 +47,7 @@ encode (o : os) = case (M.lookup o encodeMap) of
     Nothing -> ('%' : toHex o) ++ encode os
 
 -- {{{1 decode
-decodeInc :: DecIncData -> DecIncRes
+decodeInc :: DecIncData String -> DecIncRes String
 decodeInc d = dI [] d
     where
         dI [] Done = Final [] []

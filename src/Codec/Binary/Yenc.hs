@@ -18,6 +18,8 @@ module Codec.Binary.Yenc
     , unchop
     ) where
 
+import Codec.Binary.Util
+
 import Data.Word
 
 _criticalsIn = [0xd6, 0xe0, 0xe3, 0x13]
@@ -33,10 +35,7 @@ encode (d : ds)
 encode _ = []
 
 -- {{{1 decode
-data DecIncData = Chunk [Word8] | Done
-data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] [Word8] | Fail [Word8] [Word8]
-
-decodeInc :: DecIncData -> DecIncRes
+decodeInc :: DecIncData [Word8] -> DecIncRes [Word8]
 decodeInc d = dI [] d
     where
         dI [] Done = Final [] []
@@ -50,17 +49,7 @@ decodeInc d = dI [] d
 -- | Decode data (strict).
 decode :: [Word8]
     -> Maybe [Word8]
-decode s = let
-        d = decodeInc (Chunk s)
-    in case d of
-        Final da _ -> Just da
-        Fail _ _ -> Nothing
-        Part da f -> let
-                d' = f Done
-            in case d' of
-                Final da' _ -> Just $ da ++ da'
-                Fail _ _ -> Nothing
-                Part _ _ -> Nothing -- should never happen
+decode = decoder decodeInc
 
 -- {{{1 chop
 -- | Chop up a string in parts.

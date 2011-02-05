@@ -44,10 +44,10 @@ fromHex = let
     in dec . map (flip M.lookup hexDecodeMap . toUpper)
 
 -- {{{1 incremental coding
-data DecIncData = Chunk String | Done
-data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] String | Fail [Word8] String
+data DecIncData i = Chunk i | Done
+data DecIncRes i = Part [Word8] (DecIncData i -> DecIncRes i) | Final [Word8] i | Fail [Word8] i
 
-decoder :: (DecIncData -> DecIncRes) -> String -> Maybe [Word8]
+decoder :: (DecIncData i -> DecIncRes i) -> i -> Maybe [Word8]
 decoder f s = let
         d = f (Chunk s)
     in case d of
