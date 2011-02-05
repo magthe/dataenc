@@ -11,8 +11,10 @@
 
 module Codec.Binary.Url
     ( encode
+    , DecIncData
+    , DecIncRes
+    , decodeInc
     , decode
-    , decode'
     , chop
     , unchop
     ) where
@@ -20,8 +22,9 @@ module Codec.Binary.Url
 import qualified Data.Map as M
 import Data.Char(ord)
 import Data.Word(Word8)
+import Data.Maybe(isJust, fromJust)
 
-import Codec.Binary.Util(toHex,fromHex)
+import Codec.Binary.Util(toHex, fromHex)
 
 _unreservedChars = zip [65..90] "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         ++ zip [97..122] "abcdefghijklmnopqrstuvwxyz"
@@ -44,19 +47,40 @@ encode (o : os) = case (M.lookup o encodeMap) of
     Nothing -> ('%' : toHex o) ++ encode os
 
 -- {{{1 decode
--- | Decode data (lazy).
-decode' :: String
-    -> [Maybe Word8]
-decode' [] = []
-decode' ('%' : c0 : c1 : cs) = fromHex [c0, c1] : decode' cs
-decode' (c : cs)
-    | c /= '%' = (Just $ fromIntegral $ ord c) : decode' cs
-    | otherwise = [Nothing]
+data DecIncData = Chunk String | Done
+data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] String | Fail [Word8] String
+
+decodeInc :: DecIncData -> DecIncRes
+decodeInc d = dI [] d
+    where
+        dI [] Done = Final [] []
+        dI lo Done = Fail [] lo
+        dI lo (Chunk s) = doDec [] (lo ++ s)
+            where
+                doDec acc [] = Part acc (dI [])
+                doDec acc s'@('%':c0:c1:cs) = let
+                        o = fromHex [c0, c1]
+                    in if isJust o
+                        then doDec (acc ++ [fromJust o]) cs
+                        else Fail acc s'
+                doDec acc s'@(c:cs)
+                    | c /= '%' = doDec (acc ++ [fromIntegral $ ord c]) cs
+                    | otherwise = Part acc (dI s')
 
 -- | Decode data (strict).
 decode :: String
     -> Maybe [Word8]
-decode = sequence . decode'
+decode s = let
+        d = decodeInc (Chunk s)
+    in case d of
+        Final da _ -> Just da
+        Fail _ _ -> Nothing
+        Part da f -> let
+                d' = f Done
+            in case d' of
+                Final da' _ -> Just $ da ++ da'
+                Fail _ _ -> Nothing
+                Part _ _ -> Nothing -- should never happen
 
 -- {{{1 chop
 -- | Chop up a string in parts.
