@@ -10,8 +10,10 @@
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Yenc
     ( encode
+    , DecIncData(..)
+    , DecIncRes(..)
+    , decodeInc
     , decode
-    , decode'
     , chop
     , unchop
     ) where
@@ -31,17 +33,34 @@ encode (d : ds)
 encode _ = []
 
 -- {{{1 decode
--- | Decode data (lazy).
-decode' :: [Word8]
-    -> [Maybe Word8]
-decode' (0x3d : d : ds) = Just (d + 150) : decode' ds
-decode' (d : ds) = Just (d + 214) : decode' ds
-decode' _ = []
+data DecIncData = Chunk [Word8] | Done
+data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] [Word8] | Fail [Word8] [Word8]
+
+decodeInc :: DecIncData -> DecIncRes
+decodeInc d = dI [] d
+    where
+        dI [] Done = Final [] []
+        dI lo Done = Fail [] lo
+        dI lo (Chunk s) = doDec [] (lo ++ s)
+            where
+                doDec acc (0x3d:d:ds) = doDec (acc ++ [d + 150]) ds
+                doDec acc (d:ds) = doDec (acc ++ [d + 214]) ds
+                doDec acc s' = Part acc (dI s')
 
 -- | Decode data (strict).
 decode :: [Word8]
     -> Maybe [Word8]
-decode = sequence . decode'
+decode s = let
+        d = decodeInc (Chunk s)
+    in case d of
+        Final da _ -> Just da
+        Fail _ _ -> Nothing
+        Part da f -> let
+                d' = f Done
+            in case d' of
+                Final da' _ -> Just $ da ++ da'
+                Fail _ _ -> Nothing
+                Part _ _ -> Nothing -- should never happen
 
 -- {{{1 chop
 -- | Chop up a string in parts.
