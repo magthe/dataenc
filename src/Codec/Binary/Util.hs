@@ -7,6 +7,9 @@
 module Codec.Binary.Util
     ( toHex
     , fromHex
+    , DecIncData(..)
+    , DecIncRes(..)
+    ,decoder
     ) where
 
 import Data.Array
@@ -39,3 +42,20 @@ fromHex = let
             in Just o
         dec _ = Nothing
     in dec . map (flip M.lookup hexDecodeMap . toUpper)
+
+-- {{{1 incremental coding
+data DecIncData = Chunk String | Done
+data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] String | Fail [Word8] String
+
+decoder :: (DecIncData -> DecIncRes) -> String -> Maybe [Word8]
+decoder f s = let
+        d = f (Chunk s)
+    in case d of
+        Final da _ -> Just da
+        Fail _ _ -> Nothing
+        Part da f -> let
+                d' = f Done
+            in case d' of
+                Final da' _ -> Just $ da ++ da'
+                Fail _ _ -> Nothing
+                Part _ _ -> Nothing -- should never happen

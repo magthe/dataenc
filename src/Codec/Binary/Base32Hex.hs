@@ -18,6 +18,8 @@ module Codec.Binary.Base32Hex
     , unchop
     ) where
 
+import Codec.Binary.Util
+
 import Control.Monad
 import Data.Array
 import Data.Bits
@@ -69,9 +71,6 @@ encode = let
     in enc
 
 -- {{{1 decode
-data DecIncData = Chunk String | Done
-data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] String | Fail [Word8] String
-
 decodeInc :: DecIncData -> DecIncRes
 decodeInc d = dI [] d
     where
@@ -117,17 +116,7 @@ decodeInc d = dI [] d
 -- | Decode data (strict).
 decode :: String
     -> Maybe [Word8]
-decode s = let
-        d = decodeInc (Chunk s)
-    in case d of
-        Final da _ -> Just da
-        Fail _ _ -> Nothing
-        Part da f -> let
-                d' = f Done
-            in case d' of
-                Final da' _ -> Just $ da ++ da'
-                Fail _ _ -> Nothing
-                Part _ _ -> Nothing -- should never happen
+decode = decoder decodeInc
 
 -- {{{1 chop
 -- | Chop up a string in parts.

@@ -17,6 +17,8 @@ module Codec.Binary.Base64Url
     , unchop
     ) where
 
+import Codec.Binary.Util
+
 import Data.Maybe
 import Data.Word
 import Data.Bits
@@ -68,9 +70,6 @@ encode = let
 
 -- {{{1 decode
 -- | Decode data (strict).
-data DecIncData = Chunk String | Done
-data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] String | Fail [Word8] String
-
 -- | Decode data incrementally by passing chunks.
 decodeInc :: DecIncData
     -> DecIncRes
@@ -108,17 +107,7 @@ decodeInc d = dI [] d
 -- | Decode data (strict).
 decode :: String
     -> Maybe [Word8]
-decode s = let
-        d = decodeInc (Chunk s)
-    in case d of
-        Final da _ -> Just da
-        Fail _ _ -> Nothing
-        Part da f -> let
-                d' = f Done
-            in case d' of
-                Final da' _ -> Just $ da ++ da'
-                Fail _ _ -> Nothing
-                Part _ _ -> Nothing -- should never happen
+decode = decoder decodeInc
 
 -- {{{1 chop
 -- | Chop up a string in parts.

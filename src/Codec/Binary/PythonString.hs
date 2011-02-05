@@ -36,11 +36,11 @@ module Codec.Binary.PythonString
     , unchop
     ) where
 
-import Data.Char
-import Data.Word
-import Data.Maybe
-
 import Codec.Binary.Util
+
+import Data.Char
+import Data.Maybe
+import Data.Word
 
 -- {{{1 encode
 -- | Encode data.
@@ -55,9 +55,6 @@ encode (o : os)
     | otherwise = chr (fromIntegral o) : encode os
 
 -- {{{1 decode
-data DecIncData = Chunk String | Done
-data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] String | Fail [Word8] String
-
 decodeInc :: DecIncData -> DecIncRes
 decodeInc d = dI [] d
     where
@@ -81,17 +78,7 @@ decodeInc d = dI [] d
 -- | Decode data (strict).
 decode :: String
     -> Maybe [Word8]
-decode s = let
-        d = decodeInc (Chunk s)
-    in case d of
-        Final da _ -> Just da
-        Fail _ _ -> Nothing
-        Part da f -> let
-                d' = f Done
-            in case d' of
-                Final da' _ -> Just $ da ++ da'
-                Fail _ _ -> Nothing
-                Part _ _ -> Nothing -- should never happen
+decode = decoder decodeInc
 
 -- {{{1 chop
 -- | Chop up a string in parts.

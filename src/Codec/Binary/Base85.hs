@@ -17,6 +17,8 @@ module Codec.Binary.Base85
     , unchop
     ) where
 
+import Codec.Binary.Util
+
 import Data.Array
 import Data.Bits
 import Data.Char
@@ -58,9 +60,6 @@ encode (b1 : b2 : b3 : b4 : bs) = foldr ((:) . (encodeArray !)) "" group ++ enco
         group = (adjustNReverse .encodeWord32ToWord8s) group2Word32
 
 -- {{{1 decode
-data DecIncData = Chunk String | Done
-data DecIncRes = Part [Word8] (DecIncData -> DecIncRes) | Final [Word8] String | Fail [Word8] String
-
 decodeInc :: DecIncData -> DecIncRes
 decodeInc d = dI [] d
     where
@@ -102,17 +101,7 @@ decodeInc d = dI [] d
 --   The input must not be enclosed in \<~ ~\>.
 decode :: String
     -> Maybe [Word8]
-decode s = let
-        d = decodeInc (Chunk s)
-    in case d of
-        Final da _ -> Just da
-        Fail _ _ -> Nothing
-        Part da f -> let
-                d' = f Done
-            in case d' of
-                Final da' _ -> Just $ da ++ da'
-                Fail _ _ -> Nothing
-                Part _ _ -> Nothing -- should never happen
+decode = decoder decodeInc
 
 -- {{{1 chop
 -- | Chop up a string in parts.
