@@ -45,9 +45,7 @@ case_uuTests2 = do
 
 case_uuTestsFail = do
     Nothing @=? decode uu "A"
-    [Nothing] @=? decode' uu "A"
     Nothing @=? decode uu "aa"
-    [Nothing] @=? decode' uu "aa"
 
 -- {{{1 xxencode tests
 xxTestData =
@@ -71,9 +69,7 @@ case_xxTests2 = do
 
 case_xxTestsFail = do
     Nothing @=? decode xx "A"
-    [Nothing] @=? decode' xx "A"
     Nothing @=? decode xx "''"
-    [Nothing] @=? decode' xx "''"
 
 -- {{{1 base85 tests
 base85TestData =
@@ -92,9 +88,7 @@ case_base85Tests = mapM_ checkAssertions base85TestData
 
 case_base85TestsFail = do
     Nothing @=? decode base85 "A"
-    [Nothing] @=? decode' base85 "A"
     Nothing @=? decode base85 "!z"
-    [Nothing] @=? decode' base85 "!z"
 
 -- {{{1 base64 tests
 base64TestData =
@@ -113,9 +107,7 @@ case_base64Tests = mapM_ checkAssertions base64TestData
 
 case_base64TestsFail = do
     Nothing @=? decode base64 "A"
-    [Nothing] @=? decode' base64 "A"
     Nothing @=? decode base64 "!!"
-    [Nothing] @=? decode' base64 "!!"
 
 -- {{{1 base64url tests
 base64UrlTestData =
@@ -140,9 +132,7 @@ case_base32Tests = mapM_ checkAssertions base32TestData
 
 case_base32TestsFail = do
     Nothing @=? decode base32 "A"
-    [Nothing] @=? decode' base32 "A"
     Nothing @=? decode base32 "gh"
-    [Nothing] @=? decode' base32 "gh"
 
 -- {{{1 base32hex tests
 base32HexTestData =
@@ -158,9 +148,7 @@ case_base32HexTests = mapM_ checkAssertions base32HexTestData
 
 case_base32HexTestsFail = do
     Nothing @=? decode base32Hex "A"
-    [Nothing] @=? decode' base32Hex "A"
     Nothing @=? decode base32Hex "gh"
-    [Nothing] @=? decode' base32Hex "gh"
 
 -- {{{1 base16 (hex)
 base16TestData =
@@ -176,9 +164,7 @@ case_base16Tests = mapM_ checkAssertions base16TestData
 
 case_base16TestsFail = do
     Nothing @=? decode base16 "A"
-    [Nothing] @=? decode' base16 "A"
     Nothing @=? decode base16 "GH"
-    [Nothing] @=? decode' base16 "GH"
 
 -- {{{1 yEncoding
 case_yencTests = do
@@ -206,9 +192,7 @@ case_qpTestsSucc = do
 
 case_qpTestsFail = do
     Nothing @=? decode qp "=4"
-    [Nothing] @=? decode' qp "=4"
     Nothing @=? decode qp "=G"
-    [Nothing] @=? decode' qp "=G"
 
 -- {{{1 python string
 pyTestData =
@@ -220,7 +204,6 @@ case_pyTests = mapM_ checkAssertions pyTestData
 
 case_pyTestsFail = do
     Nothing @=? decode py "\\z"
-    [Nothing] @=? decode' py "\\z"
 
 -- {{{1 url encoding
 urlTestData =
@@ -232,9 +215,7 @@ case_urlTests = mapM_ checkAssertions urlTestData
 
 case_urlTestsFail = do
     Nothing @=? decode url "%ga"
-    [Nothing] @=? decode' url "%ga"
     Nothing @=? decode url "%%"
-    [Nothing] @=? decode' url "%%"
 
 -- {{{1 all the tests
 allTests = $(testGroupGenerator)
