@@ -8,7 +8,10 @@
 -- Further documentation and information can be found at
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Base85
-    ( encode
+    ( EncIncData(..)
+    , EncIncRes(..)
+    , encodeInc
+    , encode
     , DecIncData(..)
     , DecIncRes(..)
     , decodeInc
@@ -39,25 +42,45 @@ decodeMap :: M.Map Char Word8
 decodeMap = M.fromList [(snd i, fst i) | i <- _encMap]
 
 -- {{{1 encode
+data EncIncData = EChunk [Word8] | EDone
+data EncIncRes = EPart String (EncIncData -> EncIncRes) | EFinal String
+
+encodeInc e = eI [] e
+    where
+        enc4 [0, 0, 0, 0] = "z"
+        enc4 [20, 20, 20, 20] = "y"
+        enc4 os@[o1, o2, o3, o4] = map (encodeArray !) group
+            where
+                group2Word32 = foldl (\ a b -> a `shiftL` 8 + fromIntegral b) 0 os
+                encodeWord32ToWord8s :: Word32 -> [Word8]
+                encodeWord32ToWord8s =
+                    map (fromIntegral . (`mod` 85)) . take 5 . iterate (`div` 85)
+                adjustNReverse = reverse . map (+ 33)
+                group = (adjustNReverse .encodeWord32ToWord8s) group2Word32
+
+        eI [] EDone = EFinal []
+        eI [o1] EDone = EFinal (take 2 cs)
+            where
+                cs = enc4 [o1, 0, 0, 1]
+        eI [o1, o2] EDone = EFinal (take 3 cs)
+            where
+                cs = enc4 [o1, o2, 0, 1]
+        eI [o1, o2, o3] EDone = EFinal (take 4 cs)
+            where
+                cs = enc4 [o1, o2, o3, 1]
+        eI lo (EChunk bs) = doEnc [] (lo ++ bs)
+            where
+                doEnc acc (o1:o2:o3:o4:os) = doEnc (acc ++ enc4 [o1, o2, o3, o4]) os
+                doEnc acc os = EPart acc (eI os)
+
 -- | Encode data.
 --
 --   The result will not be enclosed in \<~ ~\>.
 encode :: [Word8]
     -> String
-encode [] = ""
-encode [b1] = take 2 $ encode [b1, 0, 0, 1]
-encode [b1, b2] = take 3 $ encode [b1, b2, 0, 1]
-encode [b1, b2, b3] = take 4 $ encode [b1, b2, b3, 1]
-encode (0 : 0 : 0 : 0 : bs) = 'z' : encode bs
-encode (20 : 20 : 20 : 20 : bs) = 'y' : encode bs
-encode (b1 : b2 : b3 : b4 : bs) = foldr ((:) . (encodeArray !)) "" group ++ encode bs
-    where
-        group2Word32 :: Word32
-        group2Word32 = foldl (\ a b -> a `shiftL` 8 + fromIntegral b) 0 [b1, b2, b3, b4]
-        encodeWord32ToWord8s :: Word32 -> [Word8]
-        encodeWord32ToWord8s = map (fromIntegral . (`mod` 85)) . take 5 . iterate (`div` 85)
-        adjustNReverse = reverse . map (+ 33)
-        group = (adjustNReverse .encodeWord32ToWord8s) group2Word32
+encode bs = case encodeInc (EChunk bs) of
+    EPart r1 f -> case f EDone of
+        EFinal r2 -> r1 ++ r2
 
 -- {{{1 decode
 decodeInc :: DecIncData String -> DecIncRes String
