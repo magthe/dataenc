@@ -8,7 +8,10 @@
 -- Further documentation and information can be found at
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Base16
-    ( encode
+    ( EncIncData(..)
+    , EncIncRes(..)
+    , encodeInc
+    , encode
     , DecIncData(..)
     , DecIncRes(..)
     , decodeInc
@@ -43,11 +46,16 @@ decodeMap  = M.fromList [(snd i, fst i) | i <- _encMap]
 
 -- {{{1 encode
 -- | Encode data.
-encode :: [Word8]
-    -> String
-encode os = let
-        splitOctet o = [ o `shiftR` 4, o .&. 0xf ]
-    in map (encodeArray !) $ foldr ((++) . splitOctet) [] os
+data EncIncData = EChunk [Word8] | EDone
+data EncIncRes = EPart String (EncIncData -> EncIncRes) | EFinal String
+
+encodeInc :: EncIncData -> EncIncRes
+encodeInc EDone = EFinal []
+encodeInc (EChunk os) = EPart (concat $ map toHex os) encodeInc
+
+encode os = case encodeInc (EChunk os) of
+    EPart r1 f -> case f EDone of
+        EFinal r2 -> r1 ++ r2
 
 -- {{{1 decode
 decodeInc :: DecIncData String -> DecIncRes String
