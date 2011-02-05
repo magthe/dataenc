@@ -8,7 +8,10 @@
 -- Further documentation and information can be found at
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Base64Url
-    ( encode
+    ( EncIncData(..)
+    , EncIncRes(..)
+    , encodeInc
+    , encode
     , DecIncData(..)
     , DecIncRes(..)
     , decodeInc
@@ -52,21 +55,35 @@ decodeMap :: M.Map Char Word8
 decodeMap  = M.fromList [(snd i, fst i) | i <- _encMap]
 
 -- {{{1 encode
--- | Encode data.
-encode :: [Word8]
-    -> String
-encode = let
-        pad n = replicate n 0
-        enc [] = ""
-        enc l@[o] = (++ "==") . take 2 .enc $ l ++ pad 2
-        enc l@[o1, o2] = (++ "=") . take 3 . enc $ l ++ pad 1
-        enc (o1 : o2 : o3 : os) = let
+data EncIncData = EChunk [Word8] | EDone
+data EncIncRes = EPart String (EncIncData -> EncIncRes) | EFinal String
+
+encodeInc e = eI [] e
+    where
+        enc3 [o1, o2, o3] = cs
+            where
                 i1 = o1 `shiftR` 2
                 i2 = (o1 `shiftL` 4 .|. o2 `shiftR` 4) .&. 0x3f
                 i3 = (o2 `shiftL` 2 .|. o3 `shiftR` 6) .&. 0x3f
                 i4 = o3 .&. 0x3f
-            in foldr ((:) . (encodeArray !)) "" [i1, i2, i3, i4] ++ enc os
-    in enc
+                cs = map (encodeArray !) [i1, i2, i3, i4]
+
+        eI [] EDone = EFinal []
+        eI [o1] EDone = EFinal (take 2 cs ++ "==")
+            where cs = enc3 [o1, 0, 0]
+        eI [o1, o2] EDone = EFinal (take 3 cs ++ "=")
+            where cs = enc3 [o1, o2, 0]
+        eI lo (EChunk bs) = doEnc [] (lo ++ bs)
+            where
+                doEnc acc (o1:o2:o3:os) = doEnc (acc ++ enc3 [o1, o2, o3]) os
+                doEnc acc os = EPart acc (eI os)
+
+-- | Encode data.
+encode :: [Word8]
+    -> String
+encode bs = case encodeInc (EChunk bs) of
+    EPart r1 f -> case f EDone of
+        EFinal r2 -> r1 ++ r2
 
 -- {{{1 decode
 -- | Decode data (strict).
