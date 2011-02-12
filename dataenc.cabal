@@ -1,5 +1,5 @@
 name: dataenc
-version: 0.13.0.3
+version: 0.13.0.4
 license: BSD3
 license-file: LICENSE
 cabal-version: >= 1.2
@@ -21,7 +21,7 @@ flag BuildTests
 
 library
     hs-source-dirs: src
-    build-depends: array >= 0.1.0 && < 0.4, base >= 3.0.0 && < 4.3, containers >= 0.1.0 && < 0.4
+    build-depends: array >= 0.1.0 && < 0.4, base >= 3.0.0 && < 4.4, containers >= 0.1.0 && < 0.5
     exposed-modules:
             Codec.Binary.Base16
             Codec.Binary.Base32
