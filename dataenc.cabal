@@ -1,8 +1,8 @@
 name: dataenc
-version: 0.13.0.4
+version: 0.13.0.5
 license: BSD3
 license-file: LICENSE
-cabal-version: >= 1.2
+cabal-version: >= 1.6
 build-type: Simple
 author: Magnus Therning
 maintainer: magnus@therning.org
@@ -44,6 +44,7 @@ executable tests
     hs-source-dirs: test-src src
     ghc-options: -fhpc
     if flag(BuildTests)
-        build-depends: test-framework, test-framework-hunit, HUnit, test-framework-quickcheck2, QuickCheck >= 2.1.0.0
+        build-depends: test-framework, test-framework-hunit, HUnit,
+            test-framework-quickcheck2, QuickCheck == 2.1.*
     else
         buildable: False
