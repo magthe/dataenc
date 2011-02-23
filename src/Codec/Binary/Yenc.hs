@@ -29,6 +29,7 @@ _criticalsIn = [0xd6, 0xe0, 0xe3, 0x13]
 _equal = 0x3d
 
 -- {{{1 encode
+-- | Incremental encoder function.
 encodeInc :: EncIncData -> EncIncRes [Word8]
 encodeInc e = eI e
     where
@@ -41,11 +42,11 @@ encodeInc e = eI e
         eI (EChunk bs) = EPart (enc bs) encodeInc
 
 -- | Encode data.
-encode :: [Word8]
-    -> [Word8]
+encode :: [Word8] -> [Word8]
 encode = encoder encodeInc
 
 -- {{{1 decode
+-- | Incremental decoder function.
 decodeInc :: DecIncData [Word8] -> DecIncRes [Word8]
 decodeInc d = dI [] d
     where
@@ -57,9 +58,8 @@ decodeInc d = dI [] d
                 doDec acc (d:ds) = doDec (acc ++ [d + 214]) ds
                 doDec acc s' = Part acc (dI s')
 
--- | Decode data (strict).
-decode :: [Word8]
-    -> Maybe [Word8]
+-- | Decode data.
+decode :: [Word8] -> Maybe [Word8]
 decode = decoder decodeInc
 
 -- {{{1 chop

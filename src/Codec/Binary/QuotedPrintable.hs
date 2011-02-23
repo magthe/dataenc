@@ -33,6 +33,7 @@ import Data.Maybe
 import Data.Word
 
 -- {{{1 encode
+-- | Incremental encoder function.
 encodeInc :: EncIncData -> EncIncRes String
 encodeInc e = eI e
     where
@@ -49,6 +50,7 @@ encode :: [Word8] -> String
 encode = encoder encodeInc
 
 -- {{{1 decode
+-- | Incremental decoder function.
 decodeInc :: DecIncData String -> DecIncRes String
 decodeInc d = dI [] d
     where
@@ -66,7 +68,7 @@ decodeInc d = dI [] d
                     | c /= '=' = doDec (acc ++ [fromIntegral $ ord c]) cs
                     | otherwise = Part acc (dI s')
 
--- | Decode data (strict).
+-- | Decode data.
 decode :: String -> Maybe [Word8]
 decode = decoder decodeInc
 

@@ -45,15 +45,17 @@ decodeMap :: M.Map Char Word8
 decodeMap  = M.fromList [(snd i, fst i) | i <- _encMap]
 
 -- {{{1 encode
--- | Encode data.
+-- | Incremental encoder function.
 encodeInc :: EncIncData -> EncIncRes String
 encodeInc EDone = EFinal []
 encodeInc (EChunk os) = EPart (concat $ map toHex os) encodeInc
 
+-- | Encode data.
 encode :: [Word8] -> String
 encode = encoder encodeInc
 
 -- {{{1 decode
+-- | Incremental decoder function.
 decodeInc :: DecIncData String -> DecIncRes String
 decodeInc d = dI [] d
     where
@@ -76,7 +78,7 @@ decodeInc d = dI [] d
                     (dec2 [c1, c2])
                 doDec acc s = Part acc (dI s)
 
--- | Decode data (strict).
+-- | Decode data.
 decode :: String -> Maybe [Word8]
 decode = decoder decodeInc
 

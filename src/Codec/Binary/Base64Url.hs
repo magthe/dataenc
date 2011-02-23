@@ -55,6 +55,7 @@ decodeMap :: M.Map Char Word8
 decodeMap  = M.fromList [(snd i, fst i) | i <- _encMap]
 
 -- {{{1 encode
+-- | Incremental encoder function.
 encodeInc :: EncIncData -> EncIncRes String
 encodeInc e = eI [] e
     where
@@ -81,10 +82,8 @@ encode :: [Word8] -> String
 encode = encoder encodeInc
 
 -- {{{1 decode
--- | Decode data (strict).
--- | Decode data incrementally by passing chunks.
-decodeInc :: DecIncData String
-    -> DecIncRes String
+-- | Incremental encoder function.
+decodeInc :: DecIncData String -> DecIncRes String
 decodeInc d = dI [] d
     where
         dec4 cs = let
@@ -116,9 +115,8 @@ decodeInc d = dI [] d
                     (dec4 [c1, c2, c3, c4])
                 doDec acc s = Part acc (dI s)
 
--- | Decode data (strict).
-decode :: String
-    -> Maybe [Word8]
+-- | Decode data.
+decode :: String -> Maybe [Word8]
 decode = decoder decodeInc
 
 -- {{{1 chop
