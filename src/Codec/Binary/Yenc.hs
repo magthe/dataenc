@@ -9,7 +9,10 @@
 -- Further documentation and information can be found at
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.Yenc
-    ( encode
+    ( EncIncData(..)
+    , EncIncRes(..)
+    , encodeInc
+    , encode
     , DecIncData(..)
     , DecIncRes(..)
     , decodeInc
@@ -26,13 +29,25 @@ _criticalsIn = [0xd6, 0xe0, 0xe3, 0x13]
 _equal = 0x3d
 
 -- {{{1 encode
+data EncIncData = EChunk [Word8] | EDone
+data EncIncRes = EPart [Word8] (EncIncData -> EncIncRes) | EFinal [Word8]
+
+encodeInc e = eI e
+    where
+        enc [] = []
+        enc (o:os)
+            | o `elem` _criticalsIn = _equal : o + 106 : enc os
+            | otherwise = o + 42 : enc os
+
+        eI EDone = EFinal []
+        eI (EChunk bs) = EPart (enc bs) encodeInc
+
 -- | Encode data.
 encode :: [Word8]
     -> [Word8]
-encode (d : ds)
-    | d `elem` _criticalsIn = _equal : d + 106 : encode ds
-    | otherwise = d + 42 : encode ds
-encode _ = []
+encode bs = case encodeInc (EChunk bs) of
+    EPart r1 f -> case f EDone of
+        EFinal r2 -> r1 ++ r2
 
 -- {{{1 decode
 decodeInc :: DecIncData [Word8] -> DecIncRes [Word8]
