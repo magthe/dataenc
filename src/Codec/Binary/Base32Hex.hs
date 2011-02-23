@@ -51,9 +51,7 @@ decodeMap :: M.Map Char Word8
 decodeMap = M.fromList [(snd i, fst i) | i <- _encMap]
 
 -- {{{1 encode
-data EncIncData = EChunk [Word8] | EDone
-data EncIncRes = EPart String (EncIncData -> EncIncRes) | EFinal String
-
+encodeInc :: EncIncData -> EncIncRes String
 encodeInc e = eI [] e
     where
         enc5 [o1, o2, o3, o4, o5] = map (encodeArray !) [i1, i2, i3, i4, i5, i6, i7, i8]
@@ -86,11 +84,8 @@ encodeInc e = eI [] e
                 doEnc acc os = EPart acc (eI os)
 
 -- | Encode data.
-encode :: [Word8]
-    -> String
-encode bs = case encodeInc (EChunk bs) of
-    EPart r1 f -> case f EDone of
-        EFinal r2 -> r1 ++ r2
+encode :: [Word8] -> String
+encode = encoder encodeInc
 
 -- {{{1 decode
 decodeInc :: DecIncData String -> DecIncRes String

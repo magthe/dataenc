@@ -29,9 +29,7 @@ _criticalsIn = [0xd6, 0xe0, 0xe3, 0x13]
 _equal = 0x3d
 
 -- {{{1 encode
-data EncIncData = EChunk [Word8] | EDone
-data EncIncRes = EPart [Word8] (EncIncData -> EncIncRes) | EFinal [Word8]
-
+encodeInc :: EncIncData -> EncIncRes [Word8]
 encodeInc e = eI e
     where
         enc [] = []
@@ -45,9 +43,7 @@ encodeInc e = eI e
 -- | Encode data.
 encode :: [Word8]
     -> [Word8]
-encode bs = case encodeInc (EChunk bs) of
-    EPart r1 f -> case f EDone of
-        EFinal r2 -> r1 ++ r2
+encode = encoder encodeInc
 
 -- {{{1 decode
 decodeInc :: DecIncData [Word8] -> DecIncRes [Word8]

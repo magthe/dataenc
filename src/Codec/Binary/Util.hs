@@ -7,9 +7,12 @@
 module Codec.Binary.Util
     ( toHex
     , fromHex
+    , EncIncData(..)
+    , EncIncRes(..)
     , DecIncData(..)
     , DecIncRes(..)
-    ,decoder
+    , encoder
+    , decoder
     ) where
 
 import Data.Array
@@ -44,6 +47,13 @@ fromHex = let
     in dec . map (flip M.lookup hexDecodeMap . toUpper)
 
 -- {{{1 incremental coding
+data EncIncData = EChunk [Word8] | EDone
+data EncIncRes i = EPart i (EncIncData -> EncIncRes i) | EFinal i
+
+encoder f os = case f (EChunk os) of
+    EPart r1 f' -> case f' EDone of
+        EFinal r2 -> r1 ++ r2
+
 data DecIncData i = Chunk i | Done
 data DecIncRes i = Part [Word8] (DecIncData i -> DecIncRes i) | Final [Word8] i | Fail [Word8] i
 

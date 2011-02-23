@@ -46,16 +46,12 @@ decodeMap  = M.fromList [(snd i, fst i) | i <- _encMap]
 
 -- {{{1 encode
 -- | Encode data.
-data EncIncData = EChunk [Word8] | EDone
-data EncIncRes = EPart String (EncIncData -> EncIncRes) | EFinal String
-
-encodeInc :: EncIncData -> EncIncRes
+encodeInc :: EncIncData -> EncIncRes String
 encodeInc EDone = EFinal []
 encodeInc (EChunk os) = EPart (concat $ map toHex os) encodeInc
 
-encode os = case encodeInc (EChunk os) of
-    EPart r1 f -> case f EDone of
-        EFinal r2 -> r1 ++ r2
+encode :: [Word8] -> String
+encode = encoder encodeInc
 
 -- {{{1 decode
 decodeInc :: DecIncData String -> DecIncRes String
