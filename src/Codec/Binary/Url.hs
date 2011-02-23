@@ -10,7 +10,10 @@
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 
 module Codec.Binary.Url
-    ( encode
+    ( EncIncData(..)
+    , EncIncRes(..)
+    , encodeInc
+    , encode
     , DecIncData
     , DecIncRes
     , decodeInc
@@ -26,6 +29,7 @@ import Data.Char(ord)
 import Data.Word(Word8)
 import Data.Maybe(isJust, fromJust)
 
+-- {{{1 enc/dec map
 _unreservedChars = zip [65..90] "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         ++ zip [97..122] "abcdefghijklmnopqrstuvwxyz"
         ++ zip [48..57] "0123456789"
@@ -38,13 +42,25 @@ decodeMap :: M.Map Char Word8
 decodeMap = M.fromList [(b, a) | (a, b) <- _unreservedChars]
 
 -- {{{1 encode
+data EncIncData = EChunk [Word8] | EDone
+data EncIncRes = EPart String (EncIncData -> EncIncRes) | EFinal String
+
+encodeInc e = eI e
+    where
+        enc [] = []
+        enc (o : os) = case (M.lookup o encodeMap) of
+            Just c -> c : enc os
+            Nothing -> ('%' : toHex o) ++ enc os
+
+        eI EDone = EFinal []
+        eI (EChunk bs) = EPart (enc bs) encodeInc
+
 -- | Encode data.
 encode :: [Word8]
     -> String
-encode [] = ""
-encode (o : os) = case (M.lookup o encodeMap) of
-    Just c -> c : encode os
-    Nothing -> ('%' : toHex o) ++ encode os
+encode bs = case encodeInc (EChunk bs) of
+    EPart r1 f -> case f EDone of
+        EFinal r2 -> r1 ++ r2
 
 -- {{{1 decode
 decodeInc :: DecIncData String -> DecIncRes String
