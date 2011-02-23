@@ -14,7 +14,10 @@
 -- Further documentation and information can be found at
 -- <http://www.haskell.org/haskellwiki/Library/Data_encoding>.
 module Codec.Binary.QuotedPrintable
-    ( encode
+    ( EncIncData(..)
+    , EncIncRes(..)
+    , encodeInc
+    , encode
     , DecIncData(..)
     , DecIncRes(..)
     , decodeInc
@@ -30,14 +33,25 @@ import Data.Maybe
 import Data.Word
 
 -- {{{1 encode
+data EncIncData = EChunk [Word8] | EDone
+data EncIncRes = EPart String (EncIncData -> EncIncRes) | EFinal String
+
+encodeInc e = eI e
+    where
+        enc [] = []
+        enc (o:os)
+            | o < 33 || o == 61 || o > 126 = ('=' : toHex o) ++ enc os
+            | otherwise = chr (fromIntegral o) : enc os
+
+        eI EDone = EFinal []
+        eI (EChunk bs) = EPart (enc bs) encodeInc
+
 -- | Encode data.
 encode :: [Word8]
     -> String
-encode [] = ""
-encode (o : os)
-    | o < 33 || o == 61 || o > 126 = ('=' : toHex o) ++ encode os
-    | otherwise = chr (fromIntegral o) : encode os
-
+encode bs = case encodeInc (EChunk bs) of
+    EPart r1 f -> case f EDone of
+        EFinal r2 -> r1 ++ r2
 
 -- {{{1 decode
 decodeInc :: DecIncData String -> DecIncRes String
