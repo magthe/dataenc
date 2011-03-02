@@ -50,13 +50,13 @@ encode = encoder encodeInc
 decodeInc :: DecIncData [Word8] -> DecIncRes [Word8]
 decodeInc d = dI [] d
     where
-        dI [] Done = Final [] []
-        dI lo Done = Fail [] lo
-        dI lo (Chunk s) = doDec [] (lo ++ s)
+        dI [] DDone = DFinal [] []
+        dI lo DDone = DFail [] lo
+        dI lo (DChunk s) = doDec [] (lo ++ s)
             where
                 doDec acc (0x3d:d:ds) = doDec (acc ++ [d + 150]) ds
                 doDec acc (d:ds) = doDec (acc ++ [d + 214]) ds
-                doDec acc s' = Part acc (dI s')
+                doDec acc s' = DPart acc (dI s')
 
 -- | Decode data.
 decode :: [Word8] -> Maybe [Word8]

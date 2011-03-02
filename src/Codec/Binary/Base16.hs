@@ -68,15 +68,15 @@ decodeInc d = dI [] d
                 then Just o
                 else Nothing
 
-        dI [] Done = Final [] []
-        dI lo Done = Fail [] lo
-        dI lo (Chunk s) = doDec [] (lo ++ s)
+        dI [] DDone = DFinal [] []
+        dI lo DDone = DFail [] lo
+        dI lo (DChunk s) = doDec [] (lo ++ s)
             where
                 doDec acc s'@(c1:c2:cs) = maybe
-                    (Fail acc s')
+                    (DFail acc s')
                     (\ b -> doDec (acc ++ [b]) cs)
                     (dec2 [c1, c2])
-                doDec acc s = Part acc (dI s)
+                doDec acc s = DPart acc (dI s)
 
 -- | Decode data.
 decode :: String -> Maybe [Word8]

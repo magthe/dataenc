@@ -70,22 +70,22 @@ encode = encoder encodeInc
 decodeInc :: DecIncData String -> DecIncRes String
 decodeInc d = dI [] d
     where
-        dI [] Done = Final [] []
-        dI lo Done = Fail [] lo
-        dI lo (Chunk s) = doDec [] (lo ++ s)
+        dI [] DDone = DFinal [] []
+        dI lo DDone = DFail [] lo
+        dI lo (DChunk s) = doDec [] (lo ++ s)
             where
-                doDec acc [] = Part acc (dI [])
+                doDec acc [] = DPart acc (dI [])
                 doDec acc s'@('\\':'x':c0:c1:cs) = let
                         o = fromHex [c0, c1]
                     in if isJust o
                         then doDec (acc ++ [fromJust o]) cs
-                        else Fail acc s'
+                        else DFail acc s'
                 doDec acc s'@('\\':'\\':cs) = doDec (acc ++ [fromIntegral $ ord '\\']) cs
                 doDec acc s'@('\\':'\'':cs) = doDec (acc ++ [fromIntegral $ ord '\'']) cs
                 doDec acc s'@('\\':'\"':cs) = doDec (acc ++ [fromIntegral $ ord '\"']) cs
                 doDec acc s'@(c:cs)
                     | c /= '\\' = doDec (acc ++ [fromIntegral $ ord c]) cs
-                    | otherwise = Part acc (dI s')
+                    | otherwise = DPart acc (dI s')
 
 -- | Decode data.
 decode :: String -> Maybe [Word8]

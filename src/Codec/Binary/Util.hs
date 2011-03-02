@@ -54,18 +54,18 @@ encoder f os = case f (EChunk os) of
     EPart r1 f' -> case f' EDone of
         EFinal r2 -> r1 ++ r2
 
-data DecIncData i = Chunk i | Done
-data DecIncRes i = Part [Word8] (DecIncData i -> DecIncRes i) | Final [Word8] i | Fail [Word8] i
+data DecIncData i = DChunk i | DDone
+data DecIncRes i = DPart [Word8] (DecIncData i -> DecIncRes i) | DFinal [Word8] i | DFail [Word8] i
 
 decoder :: (DecIncData i -> DecIncRes i) -> i -> Maybe [Word8]
 decoder f s = let
-        d = f (Chunk s)
+        d = f (DChunk s)
     in case d of
-        Final da _ -> Just da
-        Fail _ _ -> Nothing
-        Part da f -> let
-                d' = f Done
+        DFinal da _ -> Just da
+        DFail _ _ -> Nothing
+        DPart da f -> let
+                d' = f DDone
             in case d' of
-                Final da' _ -> Just $ da ++ da'
-                Fail _ _ -> Nothing
-                Part _ _ -> Nothing -- should never happen
+                DFinal da' _ -> Just $ da ++ da'
+                DFail _ _ -> Nothing
+                DPart _ _ -> Nothing -- should never happen

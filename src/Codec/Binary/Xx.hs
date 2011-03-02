@@ -84,23 +84,23 @@ decodeInc d = dI [] d
                 then Just [o1, o2, o3]
                 else Nothing
 
-        dI [] Done = Final [] []
-        dI lo@[c1, c2] Done = maybe
-            (Fail [] lo)
-            (\ bs -> Final (take 1 bs) [])
+        dI [] DDone = DFinal [] []
+        dI lo@[c1, c2] DDone = maybe
+            (DFail [] lo)
+            (\ bs -> DFinal (take 1 bs) [])
             (dec4 [c1, c2, '+', '+'])
-        dI lo@[c1, c2, c3] Done = maybe
-            (Fail [] lo)
-            (\ bs -> Final (take 2 bs) [])
+        dI lo@[c1, c2, c3] DDone = maybe
+            (DFail [] lo)
+            (\ bs -> DFinal (take 2 bs) [])
             (dec4 [c1, c2, c3, '+'])
-        dI lo Done = Fail [] lo
-        dI lo (Chunk s) = doDec [] (lo ++ s)
+        dI lo DDone = DFail [] lo
+        dI lo (DChunk s) = doDec [] (lo ++ s)
             where
                 doDec acc s'@(c1:c2:c3:c4:cs) = maybe
-                    (Fail acc s')
+                    (DFail acc s')
                     (\ bs -> doDec (acc ++ bs) cs)
                     (dec4 [c1, c2, c3, c4])
-                doDec acc s' = Part acc (dI s')
+                doDec acc s' = DPart acc (dI s')
 
 -- | Decode data.
 decode :: String

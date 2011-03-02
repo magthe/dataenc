@@ -106,31 +106,31 @@ decodeInc d = dI [] d
                 then Just [o1, o2, o3, o4, o5]
                 else Nothing
 
-        dI [] Done = Final [] []
-        dI lo Done = Fail [] lo
-        dI lo (Chunk s) = doDec [] (lo ++ s)
+        dI [] DDone = DFinal [] []
+        dI lo DDone = DFail [] lo
+        dI lo (DChunk s) = doDec [] (lo ++ s)
             where
                 doDec acc s@(c1:c2:'=':'=':'=':'=':'=':'=':cs) = maybe
-                    (Fail acc s)
-                    (\ bs -> Final (acc ++ take 1 bs) cs)
+                    (DFail acc s)
+                    (\ bs -> DFinal (acc ++ take 1 bs) cs)
                     (dec8 [c1, c2, 'A', 'A', 'A', 'A', 'A', 'A'])
                 doDec acc s@(c1:c2:c3:c4:'=':'=':'=':'=':cs) = maybe
-                    (Fail acc s)
-                    (\ bs -> Final (acc ++ take 2 bs) cs)
+                    (DFail acc s)
+                    (\ bs -> DFinal (acc ++ take 2 bs) cs)
                     (dec8 [c1, c2, c3, c4, 'A', 'A', 'A', 'A'])
                 doDec acc s@(c1:c2:c3:c4:c5:'=':'=':'=':cs) = maybe
-                    (Fail acc s)
-                    (\ bs -> Final (acc ++ take 3 bs) cs)
+                    (DFail acc s)
+                    (\ bs -> DFinal (acc ++ take 3 bs) cs)
                     (dec8 [c1, c2, c3, c4, c5, 'A', 'A', 'A'])
                 doDec acc s@(c1:c2:c3:c4:c5:c6:c7:'=':cs) = maybe
-                    (Fail acc s)
-                    (\ bs -> Final (acc ++ take 4 bs) cs)
+                    (DFail acc s)
+                    (\ bs -> DFinal (acc ++ take 4 bs) cs)
                     (dec8 [c1, c2, c3, c4, c5, c6, c7, 'A'])
                 doDec acc s@(c1:c2:c3:c4:c5:c6:c7:c8:cs) = maybe
-                    (Fail acc s)
+                    (DFail acc s)
                     (\ bs -> doDec (acc ++ bs) cs)
                     (dec8 [c1, c2, c3, c4, c5, c6, c7, c8])
-                doDec acc s = Part acc (dI s)
+                doDec acc s = DPart acc (dI s)
 
 -- | Decode data.
 decode :: String

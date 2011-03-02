@@ -95,26 +95,26 @@ decodeInc d = dI [] d
                 then Just $ word32ToGroup $ group2Word32 adjRev
                 else Nothing
 
-        dI lo (Chunk s) = doDec [] (lo ++ s)
-        dI [] Done = Final [] []
-        dI cs@[c1, c2] Done = case doDec [] (cs ++ "uuu") of
-                (Part r _) -> Final (take 1 r) []
+        dI lo (DChunk s) = doDec [] (lo ++ s)
+        dI [] DDone = DFinal [] []
+        dI cs@[c1, c2] DDone = case doDec [] (cs ++ "uuu") of
+                (DPart r _) -> DFinal (take 1 r) []
                 f -> f
-        dI cs@[c1, c2, c3] Done = case doDec [] (cs ++ "uu") of
-                (Part r _) -> Final (take 2 r) []
+        dI cs@[c1, c2, c3] DDone = case doDec [] (cs ++ "uu") of
+                (DPart r _) -> DFinal (take 2 r) []
                 f -> f
-        dI cs@[c1, c2, c3, c4] Done = case doDec [] (cs ++ "u") of
-                (Part r _) -> Final (take 3 r) []
+        dI cs@[c1, c2, c3, c4] DDone = case doDec [] (cs ++ "u") of
+                (DPart r _) -> DFinal (take 3 r) []
                 f -> f
-        dI lo Done = Fail [] lo
+        dI lo DDone = DFail [] lo
 
         doDec acc ('z':cs) = doDec (acc ++ [0, 0, 0, 0]) cs
         doDec acc ('y':cs) = doDec (acc ++ [20, 20, 20, 20]) cs
         doDec acc s@(c1:c2:c3:c4:c5:cs) = maybe
-            (Fail acc s)
+            (DFail acc s)
             (\ bs -> doDec (acc ++ bs) cs)
             (dec5 [c1, c2, c3, c4, c5])
-        doDec acc cs = Part acc (dI cs)
+        doDec acc cs = DPart acc (dI cs)
 
 -- | Decode data.
 --
