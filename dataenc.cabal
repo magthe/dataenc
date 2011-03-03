@@ -1,5 +1,5 @@
 name: dataenc
-version: 0.13.999.999
+version: 0.14
 license: BSD3
 license-file: LICENSE
 cabal-version: >= 1.6
@@ -7,7 +7,7 @@ build-type: Simple
 author: Magnus Therning
 maintainer: magnus@therning.org
 homepage: http://www.haskell.org/haskellwiki/Library/Data_encoding
-copyright: Magnus Therning, 2007-2009
+copyright: Magnus Therning, 2007-2011
 category: Codec
 synopsis: Data encoding library
 description: Data encoding library currently providing Base16, Base32,
