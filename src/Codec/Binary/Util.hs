@@ -47,15 +47,26 @@ fromHex = let
     in dec . map (flip M.lookup hexDecodeMap . toUpper)
 
 -- {{{1 incremental coding
-data EncIncData = EChunk [Word8] | EDone
-data EncIncRes i = EPart i (EncIncData -> EncIncRes i) | EFinal i
+-- | Data type for the incremental encoding functions.
+data EncIncData = EChunk [Word8] -- ^ a chunk of data to be encoded
+    | EDone -- ^ the signal to the encoder that the stream of data is ending
+
+-- | Data type for the result of calling the incremental encoding functions.
+data EncIncRes i = EPart i (EncIncData -> EncIncRes i) -- ^ a partial result together with the continuation to use for further encoding
+    | EFinal i -- ^ the final result of encoding (the response to 'EDone')
 
 encoder f os = case f (EChunk os) of
     EPart r1 f' -> case f' EDone of
         EFinal r2 -> r1 ++ r2
 
-data DecIncData i = DChunk i | DDone
-data DecIncRes i = DPart [Word8] (DecIncData i -> DecIncRes i) | DFinal [Word8] i | DFail [Word8] i
+-- | Data type for the incremental decoding functions.
+data DecIncData i = DChunk i -- ^ a chunk of data to be decoded
+    | DDone -- ^ the signal to the decoder that the stream of data is ending
+
+-- | Data type for the result of calling the incremental encoding functions.
+data DecIncRes i = DPart [Word8] (DecIncData i -> DecIncRes i) -- ^ a partial result together with the continuation to user for further decoding
+    | DFinal [Word8] i -- ^ the final result of decoding (the response to 'DDone')
+    | DFail [Word8] i -- ^ a partial result for a failed decoding, together with the remainder of the data passed in so far
 
 decoder :: (DecIncData i -> DecIncRes i) -> i -> Maybe [Word8]
 decoder f s = let
