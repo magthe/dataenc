@@ -28,13 +28,6 @@ import qualified Codec.Binary.QuotedPrintable as QP
 import qualified Codec.Binary.PythonString as Py
 import qualified Codec.Binary.Url as Url
 
--- {{{1 Arbitrary instances
-instance Arbitrary Word8 where
-    arbitrary = do
-        n <- choose (fromIntegral (minBound::Word8) :: Int,
-                fromIntegral (maxBound::Word8) :: Int)
-        return $ fromIntegral n
-
 -- {{{1 uuencode properties
 prop_uuEncode ws = ws == (fromJust . Uu.decode . Uu.encode) ws
     where types = ws::[Word8]

@@ -1,5 +1,5 @@
 name: dataenc
-version: 0.14
+version: 0.14.0.1
 license: BSD3
 license-file: LICENSE
 cabal-version: >= 1.6
@@ -45,7 +45,7 @@ executable tests
     -- ghc-options: -fhpc
     if flag(BuildTests)
         build-depends: test-framework, test-framework-hunit, HUnit,
-            test-framework-quickcheck2, QuickCheck ==2.1.*,
+            test-framework-quickcheck2, QuickCheck ==2.4.*,
             test-framework-th
     else
         buildable: False
