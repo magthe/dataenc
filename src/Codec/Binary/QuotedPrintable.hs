@@ -58,15 +58,15 @@ decodeInc d = dI [] d
         dI lo DDone = DFail [] lo
         dI lo (DChunk s) = doDec [] (lo ++ s)
             where
-                doDec acc [] = DPart (reverse $ concat acc) (dI [])
+                doDec acc [] = DPart (concat $ reverse acc) (dI [])
                 doDec acc s'@('=':c0:c1:cs) = let
                         o = fromHex [c0, c1]
                     in if isJust o
                         then doDec ([fromJust o] : acc) cs
-                        else DFail (reverse $ concat acc) s'
+                        else DFail (concat $ reverse acc) s'
                 doDec acc s'@(c:cs)
                     | c /= '=' = doDec ([fromIntegral $ ord c] : acc) cs
-                    | otherwise = DPart (reverse $ concat acc) (dI s')
+                    | otherwise = DPart (concat $ reverse acc) (dI s')
 
 -- | Decode data.
 decode :: String -> Maybe [Word8]
