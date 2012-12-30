@@ -5,9 +5,9 @@ license-file: LICENSE
 cabal-version: >= 1.6
 build-type: Simple
 author: Magnus Therning
-maintainer: magnus@therning.org
+maintainer: none
 homepage: http://www.haskell.org/haskellwiki/Library/Data_encoding
-copyright: Magnus Therning, 2007-2011
+copyright: Magnus Therning, 2007-2012
 category: Codec
 synopsis: Data encoding library
 description: Data encoding library currently providing Base16, Base32,
