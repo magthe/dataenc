@@ -15,7 +15,7 @@ description: Data encoding library currently providing Base16, Base32,
         Quoted-Printable, URL encoding, uuencode, xxencode, and yEncoding.
 extra-source-files: test-src/DataencUT.hs test-src/DataencQC.hs test-src/Test.hs GNUmakefile
 
-flag BuildTests
+flag tests
     Description: Build unit and quickcheck tests.
     Default: False
 
@@ -43,9 +43,9 @@ executable tests
     main-is: Test.hs
     hs-source-dirs: test-src src
     -- ghc-options: -fhpc
-    if flag(BuildTests)
+    if flag(tests)
         build-depends: test-framework, test-framework-hunit, HUnit,
-            test-framework-quickcheck2, QuickCheck ==2.4.*,
+            test-framework-quickcheck2, QuickCheck ==2.5.*,
             test-framework-th
     else
         buildable: False
