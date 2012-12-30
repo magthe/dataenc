@@ -47,7 +47,7 @@ encodeInc :: EncIncData -> EncIncRes String
 encodeInc e = eI [] e
     where
         enc4 [0, 0, 0, 0] = "z"
-        enc4 [20, 20, 20, 20] = "y"
+        enc4 [0x20, 0x20, 0x20, 0x20] = "y"
         enc4 os@[o1, o2, o3, o4] = map (encodeArray !) group
             where
                 group2Word32 = foldl (\ a b -> a `shiftL` 8 + fromIntegral b) 0 os
@@ -109,7 +109,7 @@ decodeInc d = dI [] d
         dI lo DDone = DFail [] lo
 
         doDec acc ('z':cs) = doDec (acc ++ [0, 0, 0, 0]) cs
-        doDec acc ('y':cs) = doDec (acc ++ [20, 20, 20, 20]) cs
+        doDec acc ('y':cs) = doDec (acc ++ [0x20, 0x20, 0x20, 0x20]) cs
         doDec acc s@(c1:c2:c3:c4:c5:cs) = maybe
             (DFail acc s)
             (\ bs -> doDec (acc ++ bs) cs)
